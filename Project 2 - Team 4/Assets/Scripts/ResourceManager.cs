@@ -1,6 +1,5 @@
 using UnityEngine;
-using TMPro; // Include this if using TextMeshPro
-using UnityEngine.UI; // Include this for Slider UI elements
+using TMPro;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -13,10 +12,14 @@ public class ResourceManager : MonoBehaviour
     public float engineEfficiency = 1f;      // Ranges from 0 to 1
     public float lifeSupportEfficiency = 1f; // Ranges from 0 to 1
 
+    // Scrap Resource
+    public float scrapAmount = 50f; // Starting amount of Scrap
+
     // UI Elements
     public TextMeshProUGUI oxygenText;
     public TextMeshProUGUI fuelText;
     public TextMeshProUGUI distanceText;
+    public TextMeshProUGUI scrapText;
 
     // Reference to ShipController
     public ShipController shipController;
@@ -73,6 +76,9 @@ public class ResourceManager : MonoBehaviour
 
         if (distanceText != null)
             distanceText.text = "Distance to Lighthouse: " + distanceToLighthouse.ToString("F1") + " units";
+
+        if (scrapText != null)
+            scrapText.text = "Scrap: " + scrapAmount.ToString("F0");
     }
 
     void CheckGameOver()
