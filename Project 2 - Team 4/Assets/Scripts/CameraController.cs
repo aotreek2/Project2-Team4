@@ -1,108 +1,102 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class CameraController : MonoBehaviour
 {
-    public Transform target;        // The object to orbit around (the ship)
-    public float distance = 20f;    // Default distance from the target
-    public float zoomSpeed = 2f;    // Speed of zooming
-    public float minDistance = 5f;  // Minimum zoom distance
-    public float maxDistance = 50f; // Maximum zoom distance
+    // Distance variables
+    public float initialDistance = 20.0f; // Starting distance from the scene origin
+    public float minDistance = 5f;        // Minimum zoom distance
+    public float maxDistance = 20f;       // Maximum zoom distance
+    private float currentDistance;        // Current distance from the pivot point
+    private float desiredDistance;        // Desired distance after scrolling
 
-    public float rotationSpeed = 100f; // Speed of rotation around the target
-    public float moveSpeed = 10f;      // Speed of camera movement with WASD
+    // Angle variables
+    public float initialYAngle = 45f;     // Initial vertical angle
+    public float minYAngle = 40f;         // Minimum vertical angle when fully zoomed in
+    public float maxYAngle = 45f;         // Maximum vertical angle when zoomed out
+    private float currentYAngle;          // Current vertical angle
 
-    private float currentX = 0f;    // Current rotation angle around the Y-axis
-    private float currentY = 20f;   // Current rotation angle around the X-axis
-    public float minYAngle = 10f;   // Minimum vertical angle
-    public float maxYAngle = 80f;   // Maximum vertical angle
+    private float currentXAngle = 0f;     // Current horizontal angle (added for Q and E rotation)
 
-    public float smoothTime = 0.1f; // Smoothing time
-    private Vector3 velocity = Vector3.zero;
+    // Movement variables
+    public float moveSpeed = 10f;         // Speed of camera movement (WASD and mouse drag)
+    public float rotationSpeed = 100f;    // Speed of rotation when using Q and E keys
+    public float zoomSpeed = 5f;          // Speed of zooming
+    public float zoomDampening = 5f;      // Damping for zooming
 
-    private Vector3 desiredPosition;
+    // Internal variables
+    private Vector3 pivotPoint;           // The point the camera orbits around
 
     void Start()
     {
-        // Unlock and show the cursor
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // Initialize distances and angles
+        currentDistance = desiredDistance = initialDistance;
+        currentYAngle = initialYAngle;
+        currentXAngle = 0f; // Start with no horizontal rotation
 
-        // Initialize currentX and currentY based on initial rotation
-        Vector3 angles = transform.eulerAngles;
-        currentX = angles.y;
-        currentY = angles.x;
+        // Set the initial pivot point (e.g., spaceship position or scene center)
+        pivotPoint = Vector3.zero; // You can set this to your spaceship's position if needed
 
-        // Initialize desiredPosition
-        UpdateCameraPosition();
-    }
-
-    void Update()
-    {
-        // Prevent camera control when pointer is over UI
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
-
-        // Mouse input for rotation
-        if (Input.GetMouseButton(1)) // Right mouse button held down
-        {
-            currentX += Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-            currentY -= Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
-
-            // Clamp vertical angle
-            currentY = Mathf.Clamp(currentY, minYAngle, maxYAngle);
-        }
-
-        // Zoom with scroll wheel
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        distance -= scroll * zoomSpeed * Time.deltaTime * 1000f;
-        distance = Mathf.Clamp(distance, minDistance, maxDistance);
-
-        // Camera movement with WASD keys
-        Vector3 moveDirection = new Vector3();
-        if (Input.GetKey(KeyCode.W))
-            moveDirection += transform.forward;
-        if (Input.GetKey(KeyCode.S))
-            moveDirection -= transform.forward;
-        if (Input.GetKey(KeyCode.A))
-            moveDirection -= transform.right;
-        if (Input.GetKey(KeyCode.D))
-            moveDirection += transform.right;
-
-        // Move the camera position
-        if (moveDirection != Vector3.zero)
-        {
-            transform.position += moveDirection.normalized * moveSpeed * Time.deltaTime;
-        }
-
-        // Optional: Reset camera position with a key press
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            currentX = 0f;
-            currentY = 20f;
-            distance = 20f;
-            transform.position = target.position - transform.forward * distance;
-        }
-
-        // Update desired position
+        // Position the camera
         UpdateCameraPosition();
     }
 
     void LateUpdate()
     {
-        if (target == null)
-            return;
+        // Handle zoom input
+        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollInput != 0.0f)
+        {
+            desiredDistance -= scrollInput * zoomSpeed;
+            desiredDistance = Mathf.Clamp(desiredDistance, minDistance, maxDistance);
+        }
 
-        // Smoothly move the camera
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref velocity, smoothTime);
-        transform.LookAt(target.position);
+        // Smoothly interpolate the camera's distance
+        currentDistance = Mathf.Lerp(currentDistance, desiredDistance, Time.deltaTime * zoomDampening);
+
+        // Adjust camera angle slightly when fully zoomed in
+        float angleLerp = Mathf.InverseLerp(maxDistance, minDistance, currentDistance);
+        currentYAngle = Mathf.Lerp(maxYAngle, minYAngle, angleLerp);
+
+        // Rotate the camera with Q and E keys
+        if (Input.GetKey(KeyCode.Q))
+        {
+            currentXAngle -= rotationSpeed * Time.deltaTime;
+        }
+        if (Input.GetKey(KeyCode.E))
+        {
+            currentXAngle += rotationSpeed * Time.deltaTime;
+        }
+
+        // Camera movement with WASD keys
+        Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        if (movement != Vector3.zero)
+        {
+            Vector3 moveDirection = Quaternion.Euler(0, currentXAngle, 0) * movement.normalized;
+            transform.position += moveDirection * moveSpeed * Time.deltaTime;
+            pivotPoint += moveDirection * moveSpeed * Time.deltaTime;
+        }
+
+        // Move the camera when both right and left mouse buttons are held down
+        if (Input.GetMouseButton(0) && Input.GetMouseButton(1))
+        {
+            float h = -Input.GetAxis("Mouse X") * moveSpeed * Time.deltaTime;
+            float v = -Input.GetAxis("Mouse Y") * moveSpeed * Time.deltaTime;
+            Vector3 moveDirection = Quaternion.Euler(0, currentXAngle, 0) * new Vector3(h, 0, v);
+            transform.position += moveDirection;
+            pivotPoint += moveDirection;
+        }
+
+        // Update the camera's position and rotation
+        UpdateCameraPosition();
     }
 
     void UpdateCameraPosition()
     {
-        // Calculate rotation and position
-        Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
-        Vector3 direction = new Vector3(0, 0, -distance);
-        desiredPosition = target.position + rotation * direction;
+        Quaternion rotation = Quaternion.Euler(currentYAngle, currentXAngle, 0);
+        Vector3 negDistance = new Vector3(0.0f, 0.0f, -currentDistance);
+        Vector3 position = rotation * negDistance + pivotPoint;
+
+        transform.rotation = rotation;
+        transform.position = position;
     }
 }
