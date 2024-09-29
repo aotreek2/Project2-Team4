@@ -4,7 +4,7 @@ using System.Collections;
 public class EventManager : MonoBehaviour
 {
     public ShipController shipController;
-    public DecisionManager decisionManager;
+    public DecisionPanelManager decisionPanelManager; // Updated to use DecisionPanelManager
 
     void Start()
     {
@@ -14,10 +14,10 @@ public class EventManager : MonoBehaviour
             shipController = FindObjectOfType<ShipController>();
         }
 
-        // Assign the DecisionManager if not set
-        if (decisionManager == null)
+        // Assign the DecisionPanelManager if not set
+        if (decisionPanelManager == null)
         {
-            decisionManager = FindObjectOfType<DecisionManager>();
+            decisionPanelManager = FindObjectOfType<DecisionPanelManager>();
         }
 
         // Start event coroutine
@@ -48,11 +48,8 @@ public class EventManager : MonoBehaviour
                 shipController.DamageLifeSupport(20f);
                 Debug.Log("Event: Fire outbreak! Life Support damaged.");
 
-                // Optionally, trigger a decision
-                if (decisionManager != null)
-                {
-                    decisionManager.ShowDecision("A fire has damaged the Life Support system. Choose an action:");
-                }
+                // Trigger the decision panel
+                decisionPanelManager.OpenDecisionPanel("A fire has damaged the Life Support system. Choose an action:", shipController);
                 break;
 
             case 1:
@@ -60,11 +57,8 @@ public class EventManager : MonoBehaviour
                 shipController.DamageHull(30f);
                 Debug.Log("Event: Asteroid collision! Hull integrity reduced.");
 
-                // Optionally, trigger a decision
-                if (decisionManager != null)
-                {
-                    decisionManager.ShowDecision("An asteroid collision has occurred. Choose an action:");
-                }
+                // Trigger the decision panel
+                decisionPanelManager.OpenDecisionPanel("An asteroid collision has damaged the hull. Choose an action:", shipController);
                 break;
 
             case 2:
@@ -72,11 +66,8 @@ public class EventManager : MonoBehaviour
                 shipController.DamageEngine(25f);
                 Debug.Log("Event: System failure! Engines damaged.");
 
-                // Optionally, trigger a decision
-                if (decisionManager != null)
-                {
-                    decisionManager.ShowDecision("A system failure has damaged the Engines. Choose an action:");
-                }
+                // Trigger the decision panel
+                decisionPanelManager.OpenDecisionPanel("A system failure has damaged the Engines. Choose an action:", shipController);
                 break;
         }
     }
