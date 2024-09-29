@@ -18,7 +18,7 @@ public class SelectionManager : MonoBehaviour
     // Handle selection of crew members with left click
     void HandleSelection()
     {
-        if (Input.GetMouseButtonDown(0)) // Left-click to select
+        if (Input.GetMouseButtonDown(0)) // Left-click to select or re-select
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -28,20 +28,19 @@ public class SelectionManager : MonoBehaviour
                 CrewMember crew = hit.collider.GetComponent<CrewMember>();
                 if (crew != null)
                 {
-                    // Deselect previous crew member
-                    if (selectedCrewMember != null)
+                    // Deselect previous crew member, if any
+                    if (selectedCrewMember != null && selectedCrewMember != crew)
                     {
                         selectedCrewMember.Deselect(); 
                     }
 
-                    // Select the clicked crew member
+                    // Select the clicked crew member (or re-select)
                     selectedCrewMember = crew;
                     selectedCrewMember.Select();
 
                     // Set selected crew in the SystemPanelManager for future use
                     systemPanelManager.SetSelectedCrewMember(selectedCrewMember);
 
-                    // Log the selection
                     Debug.Log("Selected crew member: " + selectedCrewMember.crewName);
                 }
             }
@@ -64,12 +63,10 @@ public class SelectionManager : MonoBehaviour
                     // Assign the selected crew member to the system
                     cubeInteraction.SetSelectedCrewMember(selectedCrewMember);
 
-                    // Log the interaction with the system
                     Debug.Log("Crew member " + selectedCrewMember.crewName + " assigned to system: " + cubeInteraction.systemType);
 
-                    // Deselect the crew member after assignment
-                    selectedCrewMember.Deselect();
-                    selectedCrewMember = null;  // Reset the selection after assigning
+                    // Do not deselect the crew member after assignment, so they can be moved again
+                    // selectedCrewMember.Deselect(); // Remove this line to keep them selected
                 }
             }
         }

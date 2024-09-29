@@ -144,9 +144,13 @@ public class CrewMember : MonoBehaviour
         isPerformingTask = false;
         currentTask = Task.Idle; // Reset the task
         repairProgress = 0f; // Reset repair progress
+
+        // Keep crew member selectable after task completion
+        isSelected = false;
+        HighlightSelection(false);
     }
 
-    void Die()
+    public void Die()
     {
         Debug.Log(crewName + " has died.");
         Destroy(gameObject);
