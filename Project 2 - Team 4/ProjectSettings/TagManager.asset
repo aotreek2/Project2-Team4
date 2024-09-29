@@ -10,6 +10,8 @@ TagManager:
   - Engine
   - Life Support
   - Hull
+  - LifeSupport
+  - Engines
   layers:
   - Default
   - TransparentFX
@@ -19,8 +21,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Crew
+  - Systems
   - 
   - 
   - 

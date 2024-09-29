@@ -14,6 +14,7 @@ public class SystemPanelManager : MonoBehaviour
     // References
     private ShipController shipController;
     private CubeInteraction.SystemType currentSystemType;
+    private CrewMember selectedCrewMember; // This was missing in your original script
 
     void Start()
     {
@@ -26,12 +27,16 @@ public class SystemPanelManager : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller)
+    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember)
     {
-        shipController = controller;
+        // Handle panel opening logic here, e.g., setting the UI text and managing the crew assignment
         currentSystemType = systemType;
 
-        // Update UI elements based on the system
+        // Use the controller and crew member in whatever logic is necessary
+        shipController = controller;
+        selectedCrewMember = crewMember; // Now this variable exists in the class
+
+        // Example logic to update the system panel UI
         switch (systemType)
         {
             case CubeInteraction.SystemType.LifeSupport:

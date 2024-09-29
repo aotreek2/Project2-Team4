@@ -13,6 +13,9 @@ public class ShipController : MonoBehaviour
     public float lifeSupportMaxHealth = 100f;
     public float hullMaxIntegrity = 100f;
 
+    // Crew management
+    public int crewCount = 20; // Initial crew count
+
     // UI Elements
     public Slider engineHealthBar;
     public Slider lifeSupportHealthBar;
@@ -129,6 +132,36 @@ public class ShipController : MonoBehaviour
     {
         hullIntegrity += amount;
         hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
+    }
+
+    // Decision-Based Event Integration
+    public void TriggerEngineFireEvent()
+    {
+        // This method can be called by the event manager to handle crew decisions
+        // Example decision event: Crew sacrifice or efficiency reduction
+
+        // Display decision panel (handled by UI manager)
+        Debug.Log("Engine Fire Event triggered! Make a decision...");
+    }
+
+    public void OnSacrificeCrewDecision()
+    {
+        if (crewCount >= 5)
+        {
+            crewCount -= 5; // Lose 5 crew members
+            engineHealth *= 0.9f; // Reduce engine health to 90%
+            Debug.Log("5 Crew sacrificed. Engine efficiency maintained.");
+        }
+        else
+        {
+            Debug.Log("Not enough crew members to sacrifice!");
+        }
+    }
+
+    public void OnSaveCrewDecision()
+    {
+        engineHealth *= 0.5f; // Reduce engine health to 50%
+        Debug.Log("Crew saved. Engine efficiency reduced.");
     }
 
     // Upgrade Methods
