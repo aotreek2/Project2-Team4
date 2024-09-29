@@ -17,6 +17,7 @@ public class CubeInteraction : MonoBehaviour
     }
 
     // This method is called when the cube is clicked to interact with the system
+// Updated SetSelectedCrewMember to pass CubeInteraction as the 4th argument
     public void SetSelectedCrewMember(CrewMember crewMember)
     {
         selectedCrewMember = crewMember;
@@ -40,4 +41,5 @@ public class CubeInteraction : MonoBehaviour
             Debug.LogError("SystemPanelManager not found or not assigned!");
         }
     }
+
 }

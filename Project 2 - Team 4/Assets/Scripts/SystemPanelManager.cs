@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
+
 
 public class SystemPanelManager : MonoBehaviour
 {
@@ -11,11 +13,20 @@ public class SystemPanelManager : MonoBehaviour
     public Button closeButton;
     public Slider repairProgressBar;
 
+    // Animation and Sound
+    public CanvasGroup panelCanvasGroup; // Reference to the CanvasGroup for fade animation
+    public AudioSource panelAudioSource; // Reference to AudioSource for playing sounds
+    public AudioClip openSound; // Audio clip for opening sound
+    public AudioClip closeSound; // Audio clip for closing sound
+    public float fadeDuration = 0.5f; // Duration of fade effect
+
+    // Fog of War Effect
+    public GameObject fogOfWarOverlay; // Semi-transparent overlay for fog effect
+
     // References
     private ShipController shipController;
     private CubeInteraction.SystemType currentSystemType;
     private CrewMember selectedCrewMember;
-    private CubeInteraction currentSystemInteraction; // Reference to the system cube
 
     private bool isRepairing = false;
     private float repairProgress = 0f;
@@ -24,7 +35,7 @@ public class SystemPanelManager : MonoBehaviour
     void Start()
     {
         // Ensure all necessary UI components are assigned
-        if (repairButton == null || closeButton == null || repairProgressBar == null)
+        if (repairButton == null || closeButton == null || repairProgressBar == null || panelCanvasGroup == null)
         {
             Debug.LogError("UI components not assigned! Check the Inspector.");
             return;
@@ -34,8 +45,16 @@ public class SystemPanelManager : MonoBehaviour
         repairButton.onClick.AddListener(OnRepairButtonClicked);
         closeButton.onClick.AddListener(OnCloseButtonClicked);
 
+        // Ensure fog of war is hidden at start
+        if (fogOfWarOverlay != null)
+        {
+            fogOfWarOverlay.SetActive(false);
+        }
+
         // Hide the panel and progress bar at the start
-        gameObject.SetActive(false);
+        panelCanvasGroup.alpha = 0f;
+        panelCanvasGroup.interactable = false;
+        panelCanvasGroup.blocksRaycasts = false;
         repairProgressBar.gameObject.SetActive(false);
     }
 
@@ -47,66 +66,12 @@ public class SystemPanelManager : MonoBehaviour
         }
     }
 
-    // Method to set the selected crew member
-    public void SetSelectedCrewMember(CrewMember crewMember)
-    {
-        selectedCrewMember = crewMember;
-        Debug.Log("Crew member " + crewMember.crewName + " selected.");
-    }
-
-    // Method to update the repair progress bar
-    public void UpdateRepairProgress(float progress)
-    {
-        // Ensure the progress bar is visible
-        repairProgressBar.gameObject.SetActive(true);
-
-        // Update the progress bar value
-        repairProgressBar.value = progress;
-
-        // If the task is completed (progress = 1), hide the progress bar
-        if (progress >= 1f)
-        {
-            isRepairing = false;
-            repairProgressBar.gameObject.SetActive(false);
-            Debug.Log("Repair completed!");
-        }
-    }
-
-    // Repair system method
-    private void PerformRepair()
-    {
-        // Simulate repair task over time
-        repairProgress += Time.deltaTime / repairDuration;
-
-        // Update the progress bar in the UI
-        UpdateRepairProgress(repairProgress);
-
-        // If repair is complete
-        if (repairProgress >= 1f)
-        {
-            float repairAmount = 20f; // You can adjust this value based on system health
-            shipController.RepairSystem(currentSystemType, repairAmount);
-            repairProgress = 0f; // Reset progress for future repairs
-        }
-    }
-
-    // Updated method to accept CubeInteraction reference
-    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember, CubeInteraction cubeInteraction)
+    // Fade-in method for showing the panel
+   public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember, CubeInteraction cubeInteraction)
     {
         currentSystemType = systemType;
         shipController = controller;
         selectedCrewMember = crewMember;
-        currentSystemInteraction = cubeInteraction; // Store the system cube reference
-
-        // Debug log to ensure crew member is correctly assigned
-        if (selectedCrewMember != null)
-        {
-            Debug.Log("Crew member " + selectedCrewMember.crewName + " selected for system panel.");
-        }
-        else
-        {
-            Debug.LogError("No crew member selected!");
-        }
 
         // Update UI based on the system type
         switch (systemType)
@@ -125,8 +90,24 @@ public class SystemPanelManager : MonoBehaviour
                 break;
         }
 
-        // Show the panel
-        gameObject.SetActive(true);
+        // Play the open sound
+        if (panelAudioSource != null && openSound != null)
+        {
+            panelAudioSource.PlayOneShot(openSound);
+        }
+
+        // Show the fog of war overlay
+        if (fogOfWarOverlay != null)
+        {
+            fogOfWarOverlay.SetActive(true);
+        }
+
+        // Start the fade-in animation
+        StartCoroutine(FadePanel(0f, 1f, fadeDuration));
+
+        // Enable the panel's interaction
+        panelCanvasGroup.interactable = true;
+        panelCanvasGroup.blocksRaycasts = true;
     }
 
     void OnRepairButtonClicked()
@@ -137,29 +118,6 @@ public class SystemPanelManager : MonoBehaviour
             return;
         }
 
-        // Determine the task type based on the system
-        CrewMember.Task taskType = CrewMember.Task.Idle;
-        switch (currentSystemType)
-        {
-            case CubeInteraction.SystemType.Engines:
-                taskType = CrewMember.Task.RepairEngines;
-                break;
-            case CubeInteraction.SystemType.LifeSupport:
-                taskType = CrewMember.Task.RepairLifeSupport;
-                break;
-            case CubeInteraction.SystemType.Hull:
-                taskType = CrewMember.Task.RepairHull;
-                break;
-        }
-
-        // Assign the crew member to the task
-        Vector3 destination = currentSystemInteraction.transform.position;
-
-        // Assuming you have some way to determine the system's damage level
-        float damageLevel = 0.5f; // Placeholder value
-
-        selectedCrewMember.AssignToTask(taskType, destination, damageLevel, shipController, currentSystemType);
-
         // Start repair process
         isRepairing = true;
         repairProgress = 0f; // Reset repair progress when starting new repair
@@ -168,7 +126,70 @@ public class SystemPanelManager : MonoBehaviour
 
     void OnCloseButtonClicked()
     {
-        // Close the panel
-        gameObject.SetActive(false);
+        // Play the close sound
+        if (panelAudioSource != null && closeSound != null)
+        {
+            panelAudioSource.PlayOneShot(closeSound);
+        }
+
+        // Start the fade-out animation
+        StartCoroutine(FadePanel(1f, 0f, fadeDuration));
+
+        // Hide the fog of war overlay after the panel fades out
+        if (fogOfWarOverlay != null)
+        {
+            fogOfWarOverlay.SetActive(false);
+        }
+
+        // Disable the panel's interaction
+        panelCanvasGroup.interactable = false;
+        panelCanvasGroup.blocksRaycasts = false;
     }
+
+    // Coroutine to fade in/out the panel
+    IEnumerator FadePanel(float startAlpha, float endAlpha, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            panelCanvasGroup.alpha = alpha;
+            yield return null;
+        }
+
+        panelCanvasGroup.alpha = endAlpha;
+    }
+
+    // Repair system method
+    private void PerformRepair()
+    {
+        repairProgress += Time.deltaTime / repairDuration;
+
+        // Update the progress bar
+        UpdateRepairProgress(repairProgress);
+
+        if (repairProgress >= 1f)
+        {
+            float repairAmount = 20f; // Adjust this value
+            shipController.RepairSystem(currentSystemType, repairAmount);
+            repairProgress = 0f; // Reset for future repairs
+            repairProgressBar.gameObject.SetActive(false); // Hide progress bar when done
+            isRepairing = false;
+        }
+    }
+
+    // Method to update the repair progress bar
+    public void UpdateRepairProgress(float progress)
+    {
+        repairProgressBar.value = progress;
+    }
+
+    // Add this method to SystemPanelManager.cs
+    public void SetSelectedCrewMember(CrewMember crewMember)
+    {
+        selectedCrewMember = crewMember;
+        Debug.Log("Crew member " + crewMember.crewName + " is set for repair tasks.");
+    }
+
 }
