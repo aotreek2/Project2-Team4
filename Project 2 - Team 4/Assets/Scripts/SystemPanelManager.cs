@@ -8,35 +8,107 @@ public class SystemPanelManager : MonoBehaviour
     public TextMeshProUGUI systemNameText;
     public TextMeshProUGUI systemDescriptionText;
     public Button repairButton;
-    public Button upgradeButton;
     public Button closeButton;
+    public Slider repairProgressBar;
 
     // References
     private ShipController shipController;
     private CubeInteraction.SystemType currentSystemType;
-    private CrewMember selectedCrewMember; // This was missing in your original script
+    private CrewMember selectedCrewMember;
+    private CubeInteraction currentSystemInteraction; // Reference to the system cube
+
+    private bool isRepairing = false;
+    private float repairProgress = 0f;
+    private float repairDuration = 10f; // You can adjust the repair time here
 
     void Start()
     {
+        // Ensure all necessary UI components are assigned
+        if (repairButton == null || closeButton == null || repairProgressBar == null)
+        {
+            Debug.LogError("UI components not assigned! Check the Inspector.");
+            return;
+        }
+
         // Assign button listeners
         repairButton.onClick.AddListener(OnRepairButtonClicked);
-        upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
         closeButton.onClick.AddListener(OnCloseButtonClicked);
 
-        // Hide the panel at start
+        // Hide the panel and progress bar at the start
         gameObject.SetActive(false);
+        repairProgressBar.gameObject.SetActive(false);
     }
 
-    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember)
+    void Update()
     {
-        // Handle panel opening logic here, e.g., setting the UI text and managing the crew assignment
+        if (isRepairing)
+        {
+            PerformRepair();
+        }
+    }
+
+    // Method to set the selected crew member
+    public void SetSelectedCrewMember(CrewMember crewMember)
+    {
+        selectedCrewMember = crewMember;
+        Debug.Log("Crew member " + crewMember.crewName + " selected.");
+    }
+
+    // Method to update the repair progress bar
+    public void UpdateRepairProgress(float progress)
+    {
+        // Ensure the progress bar is visible
+        repairProgressBar.gameObject.SetActive(true);
+
+        // Update the progress bar value
+        repairProgressBar.value = progress;
+
+        // If the task is completed (progress = 1), hide the progress bar
+        if (progress >= 1f)
+        {
+            isRepairing = false;
+            repairProgressBar.gameObject.SetActive(false);
+            Debug.Log("Repair completed!");
+        }
+    }
+
+    // Repair system method
+    private void PerformRepair()
+    {
+        // Simulate repair task over time
+        repairProgress += Time.deltaTime / repairDuration;
+
+        // Update the progress bar in the UI
+        UpdateRepairProgress(repairProgress);
+
+        // If repair is complete
+        if (repairProgress >= 1f)
+        {
+            float repairAmount = 20f; // You can adjust this value based on system health
+            shipController.RepairSystem(currentSystemType, repairAmount);
+            repairProgress = 0f; // Reset progress for future repairs
+        }
+    }
+
+    // Updated method to accept CubeInteraction reference
+    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember, CubeInteraction cubeInteraction)
+    {
         currentSystemType = systemType;
-
-        // Use the controller and crew member in whatever logic is necessary
         shipController = controller;
-        selectedCrewMember = crewMember; // Now this variable exists in the class
+        selectedCrewMember = crewMember;
+        currentSystemInteraction = cubeInteraction; // Store the system cube reference
 
-        // Example logic to update the system panel UI
+        // Debug log to ensure crew member is correctly assigned
+        if (selectedCrewMember != null)
+        {
+            Debug.Log("Crew member " + selectedCrewMember.crewName + " selected for system panel.");
+        }
+        else
+        {
+            Debug.LogError("No crew member selected!");
+        }
+
+        // Update UI based on the system type
         switch (systemType)
         {
             case CubeInteraction.SystemType.LifeSupport:
@@ -59,66 +131,39 @@ public class SystemPanelManager : MonoBehaviour
 
     void OnRepairButtonClicked()
     {
-        // Implement repair logic
-        float repairAmount = 20f; // Amount to repair
-        float repairCost = 10f;   // Scrap cost
-
-        if (shipController.resourceManager.scrapAmount >= repairCost)
+        if (selectedCrewMember == null)
         {
-            shipController.resourceManager.scrapAmount -= repairCost;
-
-            switch (currentSystemType)
-            {
-                case CubeInteraction.SystemType.LifeSupport:
-                    shipController.RepairLifeSupport(repairAmount);
-                    break;
-                case CubeInteraction.SystemType.Engines:
-                    shipController.RepairEngine(repairAmount);
-                    break;
-                case CubeInteraction.SystemType.Hull:
-                    shipController.RepairHull(repairAmount);
-                    break;
-            }
-
-            Debug.Log($"{currentSystemType} repaired by {repairAmount}%");
+            Debug.LogError("No crew member selected for repair!");
+            return;
         }
-        else
+
+        // Determine the task type based on the system
+        CrewMember.Task taskType = CrewMember.Task.Idle;
+        switch (currentSystemType)
         {
-            Debug.Log("Not enough Scrap to repair.");
+            case CubeInteraction.SystemType.Engines:
+                taskType = CrewMember.Task.RepairEngines;
+                break;
+            case CubeInteraction.SystemType.LifeSupport:
+                taskType = CrewMember.Task.RepairLifeSupport;
+                break;
+            case CubeInteraction.SystemType.Hull:
+                taskType = CrewMember.Task.RepairHull;
+                break;
         }
-    }
 
-    void OnUpgradeButtonClicked()
-    {
-        // Implement upgrade logic
-        float upgradeCost = 30f; // Scrap cost
+        // Assign the crew member to the task
+        Vector3 destination = currentSystemInteraction.transform.position;
 
-        if (shipController.resourceManager.scrapAmount >= upgradeCost)
-        {
-            shipController.resourceManager.scrapAmount -= upgradeCost;
+        // Assuming you have some way to determine the system's damage level
+        float damageLevel = 0.5f; // Placeholder value
 
-            switch (currentSystemType)
-            {
-                case CubeInteraction.SystemType.LifeSupport:
-                    // Upgrade Life Support (e.g., increase efficiency)
-                    shipController.UpgradeLifeSupport();
-                    break;
-                case CubeInteraction.SystemType.Engines:
-                    // Upgrade Engines
-                    shipController.UpgradeEngine();
-                    break;
-                case CubeInteraction.SystemType.Hull:
-                    // Upgrade Hull
-                    shipController.UpgradeHull();
-                    break;
-            }
+        selectedCrewMember.AssignToTask(taskType, destination, damageLevel, shipController, currentSystemType);
 
-            Debug.Log($"{currentSystemType} upgraded.");
-        }
-        else
-        {
-            Debug.Log("Not enough Scrap to upgrade.");
-        }
+        // Start repair process
+        isRepairing = true;
+        repairProgress = 0f; // Reset repair progress when starting new repair
+        repairProgressBar.gameObject.SetActive(true); // Show progress bar during repair
     }
 
     void OnCloseButtonClicked()

@@ -3,36 +3,41 @@ using UnityEngine;
 public class CubeInteraction : MonoBehaviour
 {
     public enum SystemType { LifeSupport, Engines, Hull }
-
     public SystemType systemType;
-    public SystemPanelManager systemPanelManager;
-    public ShipController shipController;
-    private CrewMember selectedCrewMember; // Reference to the selected crew member
+
+    public SystemPanelManager systemPanelManager; // Manually assign this in the Inspector
+    private CrewMember selectedCrewMember;
 
     void Start()
     {
-        // Find the system panel manager in the scene (if not assigned in the Inspector)
         if (systemPanelManager == null)
         {
-            systemPanelManager = FindObjectOfType<SystemPanelManager>();
+            Debug.LogError("SystemPanelManager not assigned in the Inspector!");
         }
+    }
 
-        if (shipController == null)
+    // This method is called when the cube is clicked to interact with the system
+    public void SetSelectedCrewMember(CrewMember crewMember)
+    {
+        selectedCrewMember = crewMember;
+
+        if (selectedCrewMember == null)
         {
-            shipController = FindObjectOfType<ShipController>();
+            Debug.LogError("No crew member selected!");
+            return;
         }
-    }
 
-    void OnMouseDown()
-    {
-        // Open the system panel and pass the current system type, ship controller, and selected crew member
-        systemPanelManager.OpenSystemPanel(systemType, shipController, selectedCrewMember);
-    }
+        Debug.Log("Crew member " + selectedCrewMember.crewName + " assigned to system: " + systemType);
 
-    // Method to set the selected crew member (called from the SelectionManager)
-    public void SetSelectedCrewMember(CrewMember crew)
-    {
-        selectedCrewMember = crew;
-        Debug.Log("Selected Crew Member: " + selectedCrewMember.crewName);
+        // Check if SystemPanelManager exists before opening the panel
+        if (systemPanelManager != null)
+        {
+            systemPanelManager.OpenSystemPanel(systemType, FindObjectOfType<ShipController>(), selectedCrewMember, this);
+            Debug.Log("SystemPanelManager opened for system: " + systemType);
+        }
+        else
+        {
+            Debug.LogError("SystemPanelManager not found or not assigned!");
+        }
     }
 }

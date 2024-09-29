@@ -17,16 +17,39 @@ public class CrewMember : MonoBehaviour
     private bool isPerformingTask = false; // Flag to check if task is being performed
     private bool isSelected = false; // Flag to check if the crew member is selected
     private float repairProgress = 0f; // Repair progress
-    private float repairDuration = 5f; // Duration to repair (adjustable based on damage)
+    public float repairDuration = 5f; // Duration to repair (adjustable based on damage)
 
     public Renderer crewRenderer; // Reference to the crew member's Renderer to indicate selection
 
+    // References
+    private ShipController shipController;
+    private SystemPanelManager systemPanelManager;
+    private CubeInteraction.SystemType currentSystemType; // Store the system type
+
     void Start()
     {
+        // Ensure the NavMeshAgent is assigned
         navAgent = GetComponent<NavMeshAgent>();
-        if (crewRenderer == null)
+        if (navAgent == null)
         {
-            crewRenderer = GetComponent<Renderer>();
+            Debug.LogError("NavMeshAgent not found on " + gameObject.name);
+        }
+
+        // Find ShipController if not assigned
+        if (shipController == null)
+        {
+            shipController = FindObjectOfType<ShipController>();
+        }
+
+        // Find SystemPanelManager if not assigned
+        if (systemPanelManager == null)
+        {
+            systemPanelManager = FindObjectOfType<SystemPanelManager>();
+        }
+
+        if (shipController == null || systemPanelManager == null)
+        {
+            Debug.LogError("ShipController or SystemPanelManager is not assigned!");
         }
     }
 
@@ -55,26 +78,28 @@ public class CrewMember : MonoBehaviour
     void HighlightSelection(bool isHighlighted)
     {
         // Change color or material to indicate selection
-        if (isHighlighted)
+        if (crewRenderer != null)
         {
-            crewRenderer.material.color = Color.yellow; // Example of highlight color
-        }
-        else
-        {
-            crewRenderer.material.color = Color.white; // Reset color when deselected
+            crewRenderer.material.color = isHighlighted ? Color.yellow : Color.white;
         }
     }
 
-    public void AssignToTask(Task newTask, Vector3 destination, float damage)
+    // Updated AssignToTask method
+    public void AssignToTask(Task newTask, Vector3 destination, float damage, ShipController controller, CubeInteraction.SystemType systemType)
     {
         currentTask = newTask;
         isPerformingTask = false; // Reset the task performance flag
         repairProgress = 0f; // Reset repair progress
+        shipController = controller; // Assign the ShipController
+        currentSystemType = systemType; // Store the system type
 
-        // Calculate repair duration based on system damage (more damage = longer repair)
-        repairDuration = 5f + (damage * 5f); // Damage level between 0-1, repair time will range between 5-10 seconds
+        // Calculate repair duration based on system damage
+        repairDuration = 5f + (damage * 5f); // Adjust as needed
 
-        navAgent.SetDestination(destination); // Move to the destination
+        if (navAgent != null)
+        {
+            navAgent.SetDestination(destination); // Move to the destination
+        }
     }
 
     void HandleMovement()
@@ -89,22 +114,33 @@ public class CrewMember : MonoBehaviour
     {
         isPerformingTask = true;
 
+        // Check if shipController and systemPanelManager are assigned
+        if (shipController == null || systemPanelManager == null)
+        {
+            Debug.LogError("ShipController or SystemPanelManager is not assigned!");
+            return; // Prevent further execution if either is null
+        }
+
         // Simulate repair task over time
         repairProgress += Time.deltaTime;
 
         // Update progress bar via SystemPanelManager
-        shipController.systemPanelManager.UpdateRepairProgress(repairProgress);
+        systemPanelManager.UpdateRepairProgress(repairProgress / repairDuration);
 
-        if (repairProgress >= repairDuration) // Repair time based on system damage
+        if (repairProgress >= repairDuration)
         {
             CompleteTask();
         }
     }
 
-
     void CompleteTask()
     {
         Debug.Log(crewName + " has completed the repair task: " + currentTask);
+
+        // Perform the actual repair
+        float repairAmount = 20f; // Adjust as needed
+        shipController.RepairSystem(currentSystemType, repairAmount);
+
         isPerformingTask = false;
         currentTask = Task.Idle; // Reset the task
         repairProgress = 0f; // Reset repair progress

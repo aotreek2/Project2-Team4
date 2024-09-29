@@ -1,8 +1,10 @@
 using UnityEngine;
-using UnityEngine.UI; // For UI elements
+using UnityEngine.UI;
 
 public class ShipController : MonoBehaviour
 {
+    public SystemPanelManager systemPanelManager; // Reference for system panel manager
+
     // System Health Variables
     public float engineHealth = 100f;
     public float lifeSupportHealth = 100f;
@@ -35,6 +37,12 @@ public class ShipController : MonoBehaviour
         if (resourceManager == null)
         {
             resourceManager = FindObjectOfType<ResourceManager>();
+        }
+
+        // Find and reference the SystemPanelManager if not assigned
+        if (systemPanelManager == null)
+        {
+            systemPanelManager = FindObjectOfType<SystemPanelManager>();
         }
 
         UpdateSystemUI();
@@ -134,52 +142,28 @@ public class ShipController : MonoBehaviour
         hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
     }
 
-    // Decision-Based Event Integration
-    public void TriggerEngineFireEvent()
+    // Repair system method for CrewMember interaction
+    public void RepairSystem(CubeInteraction.SystemType systemType, float repairAmount)
     {
-        // This method can be called by the event manager to handle crew decisions
-        // Example decision event: Crew sacrifice or efficiency reduction
-
-        // Display decision panel (handled by UI manager)
-        Debug.Log("Engine Fire Event triggered! Make a decision...");
-    }
-
-    public void OnSacrificeCrewDecision()
-    {
-        if (crewCount >= 5)
+        switch (systemType)
         {
-            crewCount -= 5; // Lose 5 crew members
-            engineHealth *= 0.9f; // Reduce engine health to 90%
-            Debug.Log("5 Crew sacrificed. Engine efficiency maintained.");
+            case CubeInteraction.SystemType.Engines:
+                engineHealth += repairAmount;
+                engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth); // Ensure health stays within bounds
+                Debug.Log("Engine repaired by " + repairAmount + " points.");
+                break;
+
+            case CubeInteraction.SystemType.LifeSupport:
+                lifeSupportHealth += repairAmount;
+                lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
+                Debug.Log("Life Support repaired by " + repairAmount + " points.");
+                break;
+
+            case CubeInteraction.SystemType.Hull:
+                hullIntegrity += repairAmount;
+                hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
+                Debug.Log("Hull repaired by " + repairAmount + " points.");
+                break;
         }
-        else
-        {
-            Debug.Log("Not enough crew members to sacrifice!");
-        }
-    }
-
-    public void OnSaveCrewDecision()
-    {
-        engineHealth *= 0.5f; // Reduce engine health to 50%
-        Debug.Log("Crew saved. Engine efficiency reduced.");
-    }
-
-    // Upgrade Methods
-    public void UpgradeEngine()
-    {
-        engineMaxHealth += 20f; // Increase max health
-        engineHealth = engineMaxHealth; // Fully repair upon upgrade
-    }
-
-    public void UpgradeLifeSupport()
-    {
-        lifeSupportMaxHealth += 20f;
-        lifeSupportHealth = lifeSupportMaxHealth;
-    }
-
-    public void UpgradeHull()
-    {
-        hullMaxIntegrity += 20f;
-        hullIntegrity = hullMaxIntegrity;
     }
 }
