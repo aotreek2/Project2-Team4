@@ -106,10 +106,9 @@ public class ShipController : MonoBehaviour
                 Debug.Log("Hull repaired by " + repairAmount + " points.");
                 break;
         }
-
-        // Update the UI after the repair
         UpdateSystemUI();
     }
+
 
     // Existing methods for damaging and repairing systems
     public void DamageEngine(float damage)

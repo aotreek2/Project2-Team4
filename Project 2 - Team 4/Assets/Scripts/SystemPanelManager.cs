@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
-
 public class SystemPanelManager : MonoBehaviour
 {
     // UI Elements
@@ -58,6 +57,15 @@ public class SystemPanelManager : MonoBehaviour
         repairProgressBar.gameObject.SetActive(false);
     }
 
+    public void StartRepair()
+    {
+        isRepairing = true;
+        repairProgress = 0f; // Reset repair progress when starting new repair
+        repairProgressBar.gameObject.SetActive(true); // Show progress bar during repair
+        Debug.Log("Repair started. Waiting for repair to complete.");
+    }
+
+
     void Update()
     {
         if (isRepairing)
@@ -66,8 +74,8 @@ public class SystemPanelManager : MonoBehaviour
         }
     }
 
-    // Fade-in method for showing the panel
-   public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember, CubeInteraction cubeInteraction)
+    // Fade-in method for showing the panel and pausing the game at the end of the fade
+    public void OpenSystemPanel(CubeInteraction.SystemType systemType, ShipController controller, CrewMember crewMember, CubeInteraction cubeInteraction)
     {
         currentSystemType = systemType;
         shipController = controller;
@@ -102,8 +110,8 @@ public class SystemPanelManager : MonoBehaviour
             fogOfWarOverlay.SetActive(true);
         }
 
-        // Start the fade-in animation
-        StartCoroutine(FadePanel(0f, 1f, fadeDuration));
+        // Start the fade-in animation and pause the game at the end of the fade
+        StartCoroutine(FadeInAndPauseGame(0f, 1f, fadeDuration));
 
         // Enable the panel's interaction
         panelCanvasGroup.interactable = true;
@@ -118,11 +126,11 @@ public class SystemPanelManager : MonoBehaviour
             return;
         }
 
-        // Start repair process
-        isRepairing = true;
-        repairProgress = 0f; // Reset repair progress when starting new repair
-        repairProgressBar.gameObject.SetActive(true); // Show progress bar during repair
+        // Do not start the repair here anymore; 
+        // Wait until the crew member enters the repair zone.
+        Debug.Log("Repair task assigned to crew member. Waiting for crew to reach the repair zone.");
     }
+
 
     void OnCloseButtonClicked()
     {
@@ -132,8 +140,8 @@ public class SystemPanelManager : MonoBehaviour
             panelAudioSource.PlayOneShot(closeSound);
         }
 
-        // Start the fade-out animation
-        StartCoroutine(FadePanel(1f, 0f, fadeDuration));
+        // Start the fade-out animation and resume the game after the fade-out
+        StartCoroutine(FadeOutAndResumeGame(1f, 0f, fadeDuration));
 
         // Hide the fog of war overlay after the panel fades out
         if (fogOfWarOverlay != null)
@@ -146,19 +154,40 @@ public class SystemPanelManager : MonoBehaviour
         panelCanvasGroup.blocksRaycasts = false;
     }
 
-    // Coroutine to fade in/out the panel
-    IEnumerator FadePanel(float startAlpha, float endAlpha, float duration)
+    // Coroutine to fade in the panel and pause the game after fade-in completes
+    private IEnumerator FadeInAndPauseGame(float startAlpha, float endAlpha, float duration)
     {
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time for fade animation
             float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
             panelCanvasGroup.alpha = alpha;
             yield return null;
         }
 
         panelCanvasGroup.alpha = endAlpha;
+
+        // Now pause the game after fade-in is complete
+        Time.timeScale = 0f;
+    }
+
+    // Coroutine to fade out the panel and resume the game after fade-out completes
+    private IEnumerator FadeOutAndResumeGame(float startAlpha, float endAlpha, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time for fade animation
+            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            panelCanvasGroup.alpha = alpha;
+            yield return null;
+        }
+
+        panelCanvasGroup.alpha = endAlpha;
+
+        // Resume the game after the fade-out is complete
+        Time.timeScale = 1f;
     }
 
     // Repair system method
@@ -185,11 +214,10 @@ public class SystemPanelManager : MonoBehaviour
         repairProgressBar.value = progress;
     }
 
-    // Add this method to SystemPanelManager.cs
+    // Set selected crew member method
     public void SetSelectedCrewMember(CrewMember crewMember)
     {
         selectedCrewMember = crewMember;
         Debug.Log("Crew member " + crewMember.crewName + " is set for repair tasks.");
     }
-
 }

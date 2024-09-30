@@ -10,12 +10,11 @@ public class CrewMember : MonoBehaviour
     public float taskEfficiency = 1f; // Task efficiency affects repair speed
     public float health = 100f;       // Crew health
 
-    public enum Task { Idle, RepairEngines, RepairLifeSupport, RepairHull }
+    public enum Task { Idle, RepairEngines, RepairLifeSupport, RepairHull, Wander }
     public Task currentTask = Task.Idle;
 
     private NavMeshAgent navAgent;
     private bool isPerformingTask = false; // Flag to check if task is being performed
-    private bool isSelected = false; // Flag to check if the crew member is selected
     private float repairProgress = 0f; // Repair progress
     public float repairDuration = 5f; // Duration to repair (adjustable based on damage)
 
@@ -24,7 +23,9 @@ public class CrewMember : MonoBehaviour
     // References
     private ShipController shipController;
     private SystemPanelManager systemPanelManager;
-    private CubeInteraction.SystemType currentSystemType; // Store the system type
+    private CubeInteraction currentCubeInteraction; // Reference to the cube (system part)
+
+    private Vector3 systemDestination; // Destination of the system to repair
 
     void Start()
     {
@@ -55,22 +56,32 @@ public class CrewMember : MonoBehaviour
 
     void Update()
     {
-        if (!isSelected) // Only handle movement and tasks when the crew member is not selected
+        if (!isPerformingTask && currentTask != Task.Idle)
         {
             HandleMovement();
         }
     }
 
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("System"))  // Assuming your system cubes have the "System" tag
+        {
+            EnterRepairZone();
+        }
+    }
+
+    
+
+
     public void Select()
     {
-        isSelected = true;
         HighlightSelection(true); // Highlight the crew member when selected
         Debug.Log(crewName + " is selected.");
     }
 
     public void Deselect()
     {
-        isSelected = false;
         HighlightSelection(false); // Remove highlight when deselected
         Debug.Log(crewName + " is deselected.");
     }
@@ -85,34 +96,52 @@ public class CrewMember : MonoBehaviour
     }
 
     // Updated AssignToTask method
-    public void AssignToTask(Task newTask, Vector3 destination, float damage, ShipController controller, CubeInteraction.SystemType systemType)
+    public void AssignToTask(Task newTask, Vector3 destination, ShipController controller, CubeInteraction cubeInteraction)
     {
         currentTask = newTask;
         isPerformingTask = false; // Reset the task performance flag
         repairProgress = 0f; // Reset repair progress
         shipController = controller; // Assign the ShipController
-        currentSystemType = systemType; // Store the system type
-
-        // Calculate repair duration based on system damage
-        repairDuration = 5f + (damage * 5f); // Adjust as needed
+        currentCubeInteraction = cubeInteraction; // Store the reference to the system cube
+        systemDestination = destination; // Assign the system destination
 
         if (navAgent != null)
         {
             navAgent.SetDestination(destination); // Move to the destination
         }
+        else
+        {
+            Debug.LogError($"{crewName} has no NavMeshAgent assigned!");
+        }
+
+        Deselect(); // Deselect the crew member to allow movement
     }
+
 
     void HandleMovement()
     {
-        if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance && !isPerformingTask)
+        if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
         {
-            PerformTask(); // Perform the task once the crew reaches the destination
+            Debug.Log($"{crewName} has arrived at destination.");
+            // Wait until entering the repair zone
         }
     }
+
+    // This method will be called when the crew enters the box collider around the system
+    public void EnterRepairZone()
+    {
+        Debug.Log($"{crewName} entered repair zone for {currentCubeInteraction.systemType}.");
+        systemPanelManager.StartRepair();  // Trigger repair now that the crew is in the repair zone
+        PerformTask();
+    }
+
 
     void PerformTask()
     {
         isPerformingTask = true;
+
+        // Add debug to confirm task execution
+        Debug.Log($"{crewName} started performing task: {currentTask}");
 
         // Check if shipController and systemPanelManager are assigned
         if (shipController == null || systemPanelManager == null)
@@ -121,32 +150,20 @@ public class CrewMember : MonoBehaviour
             return; // Prevent further execution if either is null
         }
 
-        // Simulate repair task over time
-        repairProgress += Time.deltaTime;
-
-        // Update progress bar via SystemPanelManager
-        systemPanelManager.UpdateRepairProgress(repairProgress / repairDuration);
-
-        if (repairProgress >= repairDuration)
-        {
-            CompleteTask();
-        }
+        // Start the repair process in the system cube
+        currentCubeInteraction.StartRepair(this);
     }
 
-    void CompleteTask()
+    // **Updated to public**: Notify the cube interaction script when the task is complete
+    public void CompleteTask()
     {
         Debug.Log(crewName + " has completed the repair task: " + currentTask);
-
-        // Perform the actual repair
-        float repairAmount = 20f; // Adjust as needed
-        shipController.RepairSystem(currentSystemType, repairAmount);
 
         isPerformingTask = false;
         currentTask = Task.Idle; // Reset the task
         repairProgress = 0f; // Reset repair progress
 
         // Keep crew member selectable after task completion
-        isSelected = false;
         HighlightSelection(false);
     }
 
