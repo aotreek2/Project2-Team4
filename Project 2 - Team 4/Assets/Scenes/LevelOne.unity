@@ -12182,13 +12182,13 @@ MonoBehaviour:
   lifeSupportMaxHealth: 100
   hullMaxIntegrity: 100
   crewCount: 20
-  engineHealthBar: {fileID: 0}
-  lifeSupportHealthBar: {fileID: 0}
-  hullIntegrityBar: {fileID: 0}
-  lifeSupportCube: {fileID: 0}
-  enginesCube: {fileID: 0}
-  hullCube: {fileID: 0}
-  resourceManager: {fileID: 0}
+  engineHealthBar: {fileID: 705000615}
+  lifeSupportHealthBar: {fileID: 318443422}
+  hullIntegrityBar: {fileID: 1572035697}
+  lifeSupportCube: {fileID: 169482992}
+  enginesCube: {fileID: 714947088}
+  hullCube: {fileID: 2087564734}
+  resourceManager: {fileID: 852831800}
 --- !u!4 &264705173
 Transform:
   m_ObjectHideFlags: 0
@@ -32935,7 +32935,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.151
+  m_Volume: 0.612
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -48289,7 +48289,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 09a87cb79e1614c48a9d07148fc91396, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -68868,7 +68868,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 09a87cb79e1614c48a9d07148fc91396, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
