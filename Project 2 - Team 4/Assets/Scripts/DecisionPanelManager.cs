@@ -91,36 +91,59 @@ public class DecisionPanelManager : MonoBehaviour
     // Handles option 1 being selected
     private void OnOption1Selected()
     {
-        if (currentEvent.Contains("fire")) // Example: Fire event
+        if (currentEvent.Contains("fire"))
         {
             shipController.SacrificeCrew(5);
             shipController.RepairLifeSupport(30f);
             Debug.Log("Option 1: Sacrificed 5 crew to repair Life Support.");
         }
-        else if (currentEvent.Contains("asteroid")) // Example: Asteroid event
+        else if (currentEvent.Contains("asteroid"))
         {
             shipController.ReduceHullIntegrity(50f);
             Debug.Log("Option 1: Reduced hull integrity to save crew.");
         }
+        else if (currentEvent.Contains("derelict"))
+        {
+            int outcome = Random.Range(0, 2); // Random success or failure outcome
+            if (outcome == 0)
+            {
+                shipController.resourceManager.scrapAmount += 50;
+                shipController.AddCrew(2);
+                shipController.AdjustCrewMorale(10f);
+                Debug.Log("You found valuable resources and rescued 2 crew members! Morale increased.");
+            }
+            else
+            {
+                shipController.DamageHull(30f);
+                shipController.SacrificeCrew(5);
+                shipController.AdjustCrewMorale(-20f);
+                Debug.Log("Pirates ambushed you. Lost 5 crew and hull integrity reduced. Morale decreased.");
+            }
+        }
 
-        CloseDecisionPanel(); // Close panel after selection
+        shipController.resourceManager.UpdateResourceUI();
+        CloseDecisionPanel();
     }
 
-    // Handles option 2 being selected
     private void OnOption2Selected()
     {
-        if (currentEvent.Contains("fire")) // Example: Fire event
+        // Adjust morale based on decisions
+        if (currentEvent.Contains("fire"))
         {
-            shipController.ReduceLifeSupportEfficiency(50f);
-            Debug.Log("Option 2: Saved the crew but reduced Life Support efficiency.");
+            shipController.AdjustCrewMorale(-5f);
         }
-        else if (currentEvent.Contains("asteroid")) // Example: Asteroid event
+        else if (currentEvent.Contains("asteroid"))
         {
-            shipController.SacrificeCrew(10);
-            Debug.Log("Option 2: Saved the hull but lost 10 crew members.");
+            shipController.AdjustCrewMorale(-10f);
         }
-
-        CloseDecisionPanel(); // Close panel after selection
+        else if (currentEvent.Contains("derelict"))
+        {
+            shipController.resourceManager.fuelAmount -= 10f;
+            shipController.AdjustCrewMorale(0f); // No change
+            Debug.Log("You decide to play it safe and move on.");
+        }
+        shipController.resourceManager.UpdateResourceUI();
+        CloseDecisionPanel();
     }
 
     // Coroutine to fade in the panel and pause the game when the fade-in completes
@@ -140,6 +163,8 @@ public class DecisionPanelManager : MonoBehaviour
         // Now pause the game after fade-in is complete
         Time.timeScale = 0f;
     }
+
+    
 
     // Coroutine to fade out the panel and resume the game when the fade-out completes
     private IEnumerator FadeOutAndResumeGame(float startAlpha, float endAlpha, float duration)

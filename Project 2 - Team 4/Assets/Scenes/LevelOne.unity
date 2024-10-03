@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -9047,7 +9047,7 @@ GameObject:
   - component: {fileID: 169482994}
   m_Layer: 9
   m_Name: Life Support
-  m_TagString: LifeSupport
+  m_TagString: System
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12178,16 +12178,17 @@ MonoBehaviour:
   engineHealth: 100
   lifeSupportHealth: 100
   hullIntegrity: 100
+  crewMorale: 100
   engineMaxHealth: 100
   lifeSupportMaxHealth: 100
   hullMaxIntegrity: 100
-  crewCount: 20
   engineHealthBar: {fileID: 705000615}
   lifeSupportHealthBar: {fileID: 318443422}
   hullIntegrityBar: {fileID: 1572035697}
   lifeSupportCube: {fileID: 169482992}
   enginesCube: {fileID: 714947088}
   hullCube: {fileID: 2087564734}
+  crewCount: 20
   resourceManager: {fileID: 852831800}
 --- !u!4 &264705173
 Transform:
@@ -24138,6 +24139,7 @@ MonoBehaviour:
   repairButton: {fileID: 104576175}
   closeButton: {fileID: 663119870}
   repairProgressBar: {fileID: 1137762369}
+  sacrificeButton: {fileID: 1909023605}
   panelCanvasGroup: {fileID: 619027437}
   panelAudioSource: {fileID: 852831799}
   openSound: {fileID: 8300000, guid: e8da7bd936c8c7345878294634b74e49, type: 3}
@@ -28968,7 +28970,7 @@ GameObject:
   - component: {fileID: 714947090}
   m_Layer: 9
   m_Name: Engines
-  m_TagString: Engines
+  m_TagString: System
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33041,6 +33043,7 @@ MonoBehaviour:
   fuelText: {fileID: 827469479}
   distanceText: {fileID: 821285956}
   scrapText: {fileID: 1082543632}
+  moraleText: {fileID: 0}
   shipController: {fileID: 264705172}
 --- !u!114 &852831801
 MonoBehaviour:
@@ -33061,7 +33064,6 @@ MonoBehaviour:
   systemLayer:
     serializedVersion: 2
     m_Bits: 512
-  systemPanelManager: {fileID: 619027435}
 --- !u!114 &852831802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48171,6 +48173,7 @@ GameObject:
   - component: {fileID: 1286740632}
   - component: {fileID: 1286740631}
   - component: {fileID: 1286740630}
+  - component: {fileID: 1286740637}
   m_Layer: 8
   m_Name: Engineer
   m_TagString: Untagged
@@ -48213,9 +48216,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crewType: 1
+  morale: 100
   crewName: Engineer 1
   taskEfficiency: 1
   health: 100
+  fatigue: 0
   currentTask: 0
   repairDuration: 5
   crewRenderer: {fileID: 1286740634}
@@ -48334,6 +48339,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1286740637
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286740629}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 2
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &1287561630
 GameObject:
   m_ObjectHideFlags: 0
@@ -53683,16 +53709,17 @@ MonoBehaviour:
   engineHealth: 100
   lifeSupportHealth: 100
   hullIntegrity: 100
+  crewMorale: 100
   engineMaxHealth: 100
   lifeSupportMaxHealth: 100
   hullMaxIntegrity: 100
-  crewCount: 20
   engineHealthBar: {fileID: 705000615}
   lifeSupportHealthBar: {fileID: 318443422}
   hullIntegrityBar: {fileID: 1572035697}
   lifeSupportCube: {fileID: 169482992}
   enginesCube: {fileID: 714947088}
   hullCube: {fileID: 2087564734}
+  crewCount: 20
   resourceManager: {fileID: 852831800}
 --- !u!65 &1382529435
 BoxCollider:
@@ -68750,6 +68777,7 @@ GameObject:
   - component: {fileID: 1732459349}
   - component: {fileID: 1732459348}
   - component: {fileID: 1732459347}
+  - component: {fileID: 1732459354}
   m_Layer: 8
   m_Name: Worker
   m_TagString: Untagged
@@ -68792,9 +68820,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crewType: 0
+  morale: 100
   crewName: crew1
   taskEfficiency: 1
   health: 100
+  fatigue: 0
   currentTask: 0
   repairDuration: 5
   crewRenderer: {fileID: 1732459351}
@@ -68913,6 +68943,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1732459354
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732459346}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 2
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &1735066281
 GameObject:
   m_ObjectHideFlags: 0
@@ -82673,7 +82724,7 @@ GameObject:
   - component: {fileID: 2087564736}
   m_Layer: 9
   m_Name: Hull
-  m_TagString: Hull
+  m_TagString: System
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

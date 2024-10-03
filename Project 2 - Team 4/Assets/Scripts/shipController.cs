@@ -7,12 +7,12 @@ public class ShipController : MonoBehaviour
     public float engineHealth = 100f;
     public float lifeSupportHealth = 100f;
     public float hullIntegrity = 100f;
+    public float crewMorale = 100f; // Overall crew moraless
     
     public float engineMaxHealth = 100f;
     public float lifeSupportMaxHealth = 100f;
     public float hullMaxIntegrity = 100f;
 
-    public int crewCount = 20; // Starting crew count
 
     public Slider engineHealthBar;
     public Slider lifeSupportHealthBar;
@@ -21,6 +21,7 @@ public class ShipController : MonoBehaviour
     public GameObject lifeSupportCube;
     public GameObject enginesCube;
     public GameObject hullCube;
+    public int crewCount = 20; // Starting crew count
 
     public ResourceManager resourceManager;
 
@@ -51,7 +52,7 @@ public class ShipController : MonoBehaviour
         resourceManager.lifeSupportEfficiency = Mathf.Clamp(lifeSupportHealthPercentage, 0.1f, 1.2f);
     }
 
-    void UpdateSystemUI()
+    public void UpdateSystemUI()
     {
         if (engineHealthBar != null)
             engineHealthBar.value = engineHealth / engineMaxHealth;
@@ -179,5 +180,42 @@ public class ShipController : MonoBehaviour
         lifeSupportHealth -= reduction;
         lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
         Debug.Log($"Life Support efficiency reduced by {percentage}%.");
+    }
+
+        public void AdjustCrewMorale(float amount)
+    {
+        crewMorale += amount;
+        crewMorale = Mathf.Clamp(crewMorale, 0f, 100f);
+        Debug.Log($"Crew morale adjusted by {amount}. Current morale: {crewMorale}%");
+
+        // Update morale for each crew member
+        CrewMember[] crewMembers = FindObjectsOfType<CrewMember>();
+        foreach (CrewMember crew in crewMembers)
+        {
+            crew.AdjustMorale(amount);
+        }
+    }
+
+     public void SacrificeCrewForRepair(int amount, CubeInteraction.SystemType systemType)
+    {
+        if (crewCount >= amount)
+        {
+            crewCount -= amount;
+            Debug.Log($"{amount} crew members sacrificed to repair {systemType}.");
+
+            // Instantly repair the system
+            RepairSystem(systemType, 100f);
+            AdjustCrewMorale(-20f); // Decrease morale due to sacrifice
+        }
+        else
+        {
+            Debug.Log("Not enough crew members to sacrifice.");
+        }
+    }
+
+      public void AddCrew(int amount)
+    {
+        crewCount += amount;
+        Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
     }
 }

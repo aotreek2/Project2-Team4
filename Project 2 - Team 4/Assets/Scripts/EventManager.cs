@@ -39,7 +39,7 @@ public class EventManager : MonoBehaviour
 
     void TriggerRandomEvent()
     {
-        int eventType = Random.Range(0, 3); // 0: Fire, 1: Asteroid, 2: System Failure
+        int eventType = Random.Range(0, 4); // 0: Fire, 1: Asteroid, 2: System Failure
 
         switch (eventType)
         {
@@ -89,6 +89,21 @@ public class EventManager : MonoBehaviour
                         "A system failure has damaged the Engines. What will you do?",
                         "Option 1: Sacrifice 10 crew to repair the engines.",
                         "Option 2: Reduce engine efficiency by 50% to save the crew.",
+                        shipController
+                    );
+                }
+                break;
+
+                case 3:
+            // Derelict ship encounter
+                Debug.Log("Event: Derelict ship encountered!");
+
+                if (decisionManager != null)
+                {
+                    decisionManager.OpenDecisionPanel(
+                        "You encounter a derelict ship. Do you want to explore it?",
+                        "Option 1: Explore the ship for potential resources.",
+                        "Option 2: Ignore it and continue your journey.",
                         shipController
                     );
                 }

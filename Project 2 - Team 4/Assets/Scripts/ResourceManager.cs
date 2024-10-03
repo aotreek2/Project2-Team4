@@ -20,6 +20,7 @@ public class ResourceManager : MonoBehaviour
     public TextMeshProUGUI fuelText;
     public TextMeshProUGUI distanceText;
     public TextMeshProUGUI scrapText;
+     public TextMeshProUGUI moraleText;
 
     // Reference to ShipController
     public ShipController shipController;
@@ -66,7 +67,7 @@ public class ResourceManager : MonoBehaviour
         distanceToLighthouse = Mathf.Clamp(distanceToLighthouse, 0f, 1000f);
     }
 
-    void UpdateResourceUI()
+    public void UpdateResourceUI()
     {
         if (oxygenText != null)
             oxygenText.text = "Oxygen Level: " + oxygenLevel.ToString("F1") + "%";
@@ -79,6 +80,11 @@ public class ResourceManager : MonoBehaviour
 
         if (scrapText != null)
             scrapText.text = "Scrap: " + scrapAmount.ToString("F0");
+
+
+        if (moraleText != null)
+            moraleText.text = "Crew Morale: " + shipController.crewMorale.ToString("F0") + "%";
+
     }
 
     void CheckGameOver()

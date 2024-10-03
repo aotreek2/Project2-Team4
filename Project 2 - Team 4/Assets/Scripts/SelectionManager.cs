@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems; // This is needed to detect UI elements
 
 public class SelectionManager : MonoBehaviour
 {
@@ -7,7 +8,6 @@ public class SelectionManager : MonoBehaviour
     public LayerMask systemLayer; // Layer for systems (Engines, Life Support, Hull)
 
     private CrewMember selectedCrewMember; // Currently selected crew member
-    public SystemPanelManager systemPanelManager; // Reference to SystemPanelManager
 
     void Update()
     {
@@ -18,11 +18,18 @@ public class SelectionManager : MonoBehaviour
     // Handle selection of crew members with left click
     void HandleSelection()
     {
+        // Check if the mouse is over a UI element, if it is, don't select anything
+        if (IsPointerOverUIElement())
+        {
+            return;
+        }
+
         if (Input.GetMouseButtonDown(0)) // Left-click to select or re-select
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
+            // Raycast to detect crew members based on their colliders
             if (Physics.Raycast(ray, out hit, 100f, crewLayer))
             {
                 CrewMember crew = hit.collider.GetComponent<CrewMember>();
@@ -38,10 +45,16 @@ public class SelectionManager : MonoBehaviour
                     selectedCrewMember = crew;
                     selectedCrewMember.Select();
 
-                    // Set selected crew in the SystemPanelManager for future use
-                    systemPanelManager.SetSelectedCrewMember(selectedCrewMember);
-
                     Debug.Log("Selected crew member: " + selectedCrewMember.crewName);
+                }
+            }
+            else
+            {
+                // If clicked elsewhere, deselect the current crew member
+                if (selectedCrewMember != null)
+                {
+                    selectedCrewMember.Deselect();
+                    selectedCrewMember = null;
                 }
             }
         }
@@ -52,23 +65,48 @@ public class SelectionManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1) && selectedCrewMember != null) // Right-click to assign task
         {
+            // Ignore clicks on UI elements
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, 100f, systemLayer))
+            if (Physics.Raycast(ray, out hit, 100f))
             {
-                CubeInteraction cubeInteraction = hit.collider.GetComponent<CubeInteraction>();
-                if (cubeInteraction != null)
+                if (((1 << hit.collider.gameObject.layer) & systemLayer) != 0)
                 {
-                    // Assign the selected crew member to the system
-                    cubeInteraction.SetSelectedCrewMember(selectedCrewMember);
+                    CubeInteraction cubeInteraction = hit.collider.GetComponent<CubeInteraction>();
+                    if (cubeInteraction != null)
+                    {
+                        // Assign the selected crew member to the system
+                        cubeInteraction.SetSelectedCrewMember(selectedCrewMember);
 
-                    Debug.Log("Crew member " + selectedCrewMember.crewName + " assigned to system: " + cubeInteraction.systemType);
+                        Debug.Log("Crew member " + selectedCrewMember.crewName + " assigned to system: " + cubeInteraction.systemType);
 
-                    // Do not deselect the crew member after assignment, so they can be moved again
-                    // selectedCrewMember.Deselect(); // Remove this line to keep them selected
+                        // Deselect the crew member after assignment
+                        selectedCrewMember.Deselect();
+                        selectedCrewMember = null;
+                    }
+                }
+                else
+                {
+                    // If right-clicked elsewhere, set crew member to rest
+                    selectedCrewMember.Rest();
+                    Debug.Log("Crew member " + selectedCrewMember.crewName + " is resting.");
+
+                    selectedCrewMember.Deselect();
+                    selectedCrewMember = null;
                 }
             }
         }
+    }
+
+    // Helper method to check if the mouse is over any UI element
+    private bool IsPointerOverUIElement()
+    {
+        return EventSystem.current.IsPointerOverGameObject();
     }
 }

@@ -12,6 +12,7 @@ TagManager:
   - Hull
   - LifeSupport
   - Engines
+  - System
   layers:
   - Default
   - TransparentFX
