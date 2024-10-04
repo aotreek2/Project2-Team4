@@ -5,17 +5,14 @@ public class ShipController : MonoBehaviour
 {
     // Existing fields and variables
     public float engineHealth = 100f;
-    public float lifeSupportHealth = 100f;
     public float hullIntegrity = 100f;
     public float crewMorale = 100f; // Overall crew morale
     public float generatorHealth = 100f; // Generator health
 
     public float engineMaxHealth = 100f;
-    public float lifeSupportMaxHealth = 100f;
     public float hullMaxIntegrity = 100f;
     public float generatorMaxHealth = 100f; // Max health for generator
 
-    public GameObject lifeSupportCube;
     public GameObject enginesCube;
     public GameObject hullCube;
     public GameObject generatorCube; // Generator cube
@@ -62,10 +59,6 @@ public class ShipController : MonoBehaviour
                 lightFlickerController.Initialize(generatorMaxHealth);
             }
         }
-        else
-        {
-            lightFlickerController.Initialize(generatorMaxHealth);
-        }
 
         // Initialize cubes' colors
         UpdateSystemCubes();
@@ -84,10 +77,6 @@ public class ShipController : MonoBehaviour
         float engineHealthPercentage = engineHealth / engineMaxHealth;
         resourceManager.engineEfficiency = Mathf.Clamp(engineHealthPercentage, 0.1f, 1.2f);
 
-        // Update life support efficiency
-        float lifeSupportHealthPercentage = lifeSupportHealth / lifeSupportMaxHealth;
-        resourceManager.lifeSupportEfficiency = Mathf.Clamp(lifeSupportHealthPercentage, 0.1f, 1.2f);
-
         // Update generator efficiency
         float generatorHealthPercentage = generatorHealth / generatorMaxHealth;
         resourceManager.generatorEfficiency = Mathf.Clamp(generatorHealthPercentage, 0.1f, 1.2f);
@@ -102,14 +91,12 @@ public class ShipController : MonoBehaviour
         if (generatorHealth <= 0f)
         {
             Debug.Log("Generator is down! Systems are losing power.");
-            ReduceLifeSupportEfficiency(50f); // Reduce life support efficiency if generator fails
             ShakeCamera(0.5f, 1.0f); // Trigger camera shake when generator fails
         }
     }
 
     void UpdateSystemCubes()
     {
-        UpdateCubeColor(lifeSupportCube, lifeSupportHealth / lifeSupportMaxHealth);
         UpdateCubeColor(enginesCube, engineHealth / engineMaxHealth);
         UpdateCubeColor(hullCube, hullIntegrity / hullMaxIntegrity);
         UpdateCubeColor(generatorCube, generatorHealth / generatorMaxHealth);
@@ -172,12 +159,6 @@ public class ShipController : MonoBehaviour
                 Debug.Log("Engine repaired by " + repairAmount + " points.");
                 break;
 
-            case CubeInteraction.SystemType.LifeSupport:
-                lifeSupportHealth += repairAmount;
-                lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
-                Debug.Log("Life Support repaired by " + repairAmount + " points.");
-                break;
-
             case CubeInteraction.SystemType.Hull:
                 hullIntegrity += repairAmount;
                 hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
@@ -219,27 +200,6 @@ public class ShipController : MonoBehaviour
         engineHealth += amount;
         engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
         Debug.Log("Engine repaired by " + amount + " points.");
-    }
-
-    public void DamageLifeSupport(float damage)
-    {
-        lifeSupportHealth -= damage;
-        lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
-        Debug.Log("Life Support damaged by " + damage + " points.");
-
-        // Trigger effects when life support is damaged
-        ShakeCamera(0.5f, 1.0f);
-        if (lightFlickerController != null)
-        {
-            lightFlickerController.TriggerMinorFlicker();
-        }
-    }
-
-    public void RepairLifeSupport(float amount)
-    {
-        lifeSupportHealth += amount;
-        lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
-        Debug.Log("Life Support repaired by " + amount + " points.");
     }
 
     public void DamageHull(float damage)
@@ -332,15 +292,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    // Reduce life support system's efficiency
-    public void ReduceLifeSupportEfficiency(float percentage)
-    {
-        float reduction = lifeSupportMaxHealth * (percentage / 100f);
-        lifeSupportHealth -= reduction;
-        lifeSupportHealth = Mathf.Clamp(lifeSupportHealth, 0f, lifeSupportMaxHealth);
-        Debug.Log($"Life Support efficiency reduced by {percentage}%.");
-    }
-
     public void AdjustCrewMorale(float amount)
     {
         crewMorale += amount;
@@ -377,4 +328,14 @@ public class ShipController : MonoBehaviour
         crewCount += amount;
         Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
     }
+
+    public void ReduceEngineEfficiency(float percentage)
+    {
+        // Assuming engineHealth directly impacts efficiency
+        float reduction = engineMaxHealth * (percentage / 100f);
+        engineHealth -= reduction;
+        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
+        Debug.Log($"Engine efficiency reduced by {percentage}%.");
+    }
+
 }

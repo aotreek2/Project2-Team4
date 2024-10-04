@@ -4,6 +4,7 @@ using System.Collections;
 public class EventManager : MonoBehaviour
 {
     public ShipController shipController;
+    public LifeSupportController lifeSupportController; // Reference to the new LifeSupportController
     public DecisionPanelManager decisionManager;
 
     void Start()
@@ -12,6 +13,12 @@ public class EventManager : MonoBehaviour
         if (shipController == null)
         {
             shipController = FindObjectOfType<ShipController>();
+        }
+
+        // Assign the LifeSupportController if not set
+        if (lifeSupportController == null)
+        {
+            lifeSupportController = FindObjectOfType<LifeSupportController>();
         }
 
         // Assign the DecisionManager if not set
@@ -109,8 +116,11 @@ public class EventManager : MonoBehaviour
     // Coroutine for Fire Event
     private IEnumerator HandleFireEvent()
     {
-        shipController.DamageLifeSupport(20f);
-        Debug.Log("Event: Fire outbreak! Life Support damaged.");
+        if (lifeSupportController != null)
+        {
+            lifeSupportController.DamageLifeSupport(20f); // Damage life support using new controller
+            Debug.Log("Event: Fire outbreak! Life Support damaged.");
+        }
 
         // Wait for effects to finish (adjust duration as needed)
         yield return new WaitForSeconds(1.0f);
@@ -122,7 +132,7 @@ public class EventManager : MonoBehaviour
                 "A fire has damaged the Life Support system. What will you do?",
                 "Option 1: Sacrifice 5 crew to repair Life Support.",
                 "Option 2: Save crew but reduce Life Support efficiency by 50%.",
-                shipController
+                shipController // Pass LifeSupportController here
             );
         }
     }

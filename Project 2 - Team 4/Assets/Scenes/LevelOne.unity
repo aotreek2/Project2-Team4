@@ -8181,6 +8181,7 @@ GameObject:
   - component: {fileID: 169482996}
   - component: {fileID: 169482995}
   - component: {fileID: 169482994}
+  - component: {fileID: 169482999}
   m_Layer: 9
   m_Name: Life Support
   m_TagString: System
@@ -8311,6 +8312,23 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 169482992}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &169482999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169482992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 044ca03010b31524e91960024800394f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifeSupportHealth: 100
+  lifeSupportMaxHealth: 100
+  oxygenLevel: 100
+  oxygenDepletionRate: 1
+  oxygenReserve: 50
 --- !u!1 &179538203
 GameObject:
   m_ObjectHideFlags: 0
@@ -32187,7 +32205,7 @@ MonoBehaviour:
   distanceText: {fileID: 821285956}
   scrapText: {fileID: 1082543632}
   moraleText: {fileID: 0}
-  shipController: {fileID: 0}
+  shipController: {fileID: 852831804}
 --- !u!114 &852831801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32220,6 +32238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shipController: {fileID: 852831804}
+  lifeSupportController: {fileID: 169482999}
   decisionManager: {fileID: 699162546}
 --- !u!4 &852831803
 Transform:
@@ -32249,15 +32268,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   engineHealth: 100
-  lifeSupportHealth: 100
   hullIntegrity: 100
   crewMorale: 100
   generatorHealth: 100
   engineMaxHealth: 100
-  lifeSupportMaxHealth: 100
   hullMaxIntegrity: 100
   generatorMaxHealth: 100
-  lifeSupportCube: {fileID: 169482992}
   enginesCube: {fileID: 714947088}
   hullCube: {fileID: 2087564734}
   generatorCube: {fileID: 2100602409}
@@ -32291,9 +32307,6 @@ MonoBehaviour:
   minFlickerOnTime: 0.05
   maxFlickerOnTime: 0.5
   randomizeFlickerTiming: 1
-  minLightIntensity: 5
-  maxLightIntensity: 10
-  pointLightIntensityMultiplier: 2
 --- !u!1 &859337128
 GameObject:
   m_ObjectHideFlags: 0

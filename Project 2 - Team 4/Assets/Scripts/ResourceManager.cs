@@ -46,19 +46,31 @@ public class ResourceManager : MonoBehaviour
 
     void ConsumeResources()
     {
-        float oxygenConsumptionRate = 1f / lifeSupportEfficiency;
-        oxygenLevel -= Time.deltaTime * oxygenConsumptionRate;
+        // Check if life support or generator is damaged before consuming oxygen
+        if (shipController.generatorHealth < shipController.generatorMaxHealth || lifeSupportEfficiency < 1f)
+        {
+            float oxygenConsumptionRate = 1f / lifeSupportEfficiency;
+            oxygenLevel -= Time.deltaTime * oxygenConsumptionRate;
+        }
+        else
+        {
+            Debug.Log("Oxygen is not being consumed because life support and generator are fully functional.");
+        }
 
+        // Fuel consumption remains as it is, based on engine efficiency
         float fuelConsumptionRate = 0.5f / engineEfficiency;
         fuelAmount -= Time.deltaTime * fuelConsumptionRate;
 
+        // Reduce distance based on engine efficiency
         float distanceReductionRate = 10f * engineEfficiency;
         distanceToLighthouse -= Time.deltaTime * distanceReductionRate;
 
+        // Clamp the values to prevent going out of bounds
         oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f);
         fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f);
         distanceToLighthouse = Mathf.Clamp(distanceToLighthouse, 0f, 1000f);
     }
+
 
     public void UpdateResourceUI()
     {
