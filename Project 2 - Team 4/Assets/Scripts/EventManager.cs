@@ -20,8 +20,44 @@ public class EventManager : MonoBehaviour
             decisionManager = FindObjectOfType<DecisionPanelManager>();
         }
 
-        // Start event coroutine
+        // Start event coroutine for random events
         StartCoroutine(RandomEvents());
+    }
+
+    void Update()
+    {
+        // Check for hotkeys and trigger specific events
+        HandleHotkeys();
+    }
+
+    // Method to detect hotkeys
+    private void HandleHotkeys()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Hotkey 1 pressed: Triggering Fire Event");
+            StartCoroutine(HandleFireEvent());
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Hotkey 2 pressed: Triggering Asteroid Event");
+            StartCoroutine(HandleAsteroidEvent());
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            Debug.Log("Hotkey 3 pressed: Triggering System Failure Event");
+            StartCoroutine(HandleSystemFailureEvent());
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            Debug.Log("Hotkey 4 pressed: Triggering Derelict Ship Event");
+            StartCoroutine(HandleDerelictEvent());
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            Debug.Log("Hotkey 5 pressed: Triggering Generator Failure Event");
+            StartCoroutine(HandleGeneratorFailureEvent());
+        }
     }
 
     IEnumerator RandomEvents()
@@ -70,8 +106,7 @@ public class EventManager : MonoBehaviour
         }
     }
 
-
-// Coroutine for Fire Event
+    // Coroutine for Fire Event
     private IEnumerator HandleFireEvent()
     {
         shipController.DamageLifeSupport(20f);
@@ -111,7 +146,6 @@ public class EventManager : MonoBehaviour
             );
         }
     }
-
 
     // Coroutine for Asteroid Event
     private IEnumerator HandleAsteroidEvent()

@@ -26,6 +26,8 @@ public class ShipController : MonoBehaviour
     public Camera mainCamera;
     public AudioClip hullDamageSound;
     public AudioSource audioSource; // Reference to the main camera
+    public Light pointLight; // The point light over the ship
+
     
 
     void Start()
@@ -201,9 +203,8 @@ public class ShipController : MonoBehaviour
                 }
             }
 
-            elapsed += duration / 6f; // Adjust flicker rate as needed
-
-            yield return new WaitForSecondsRealtime(duration / 6f); // Use unscaled time
+            elapsed += 0.1f;  // Flicker every 0.1 seconds
+            yield return new WaitForSecondsRealtime(0.1f); // Adjust this to change the flicker speed
         }
 
         // Ensure lights are on after flickering
@@ -318,10 +319,26 @@ public class ShipController : MonoBehaviour
         generatorHealth = Mathf.Clamp(generatorHealth, 0f, generatorMaxHealth);
         Debug.Log("Generator damaged by " + damage + " points.");
 
-        // Trigger effects when generator is damaged
+        // Flicker the other lights when the generator is damaged
+        FlickerLights(0.5f); 
+
+        // Trigger camera shake when generator is damaged
         ShakeCamera(0.5f, 1.0f);
-        FlickerLights(0.5f);
+
+        // Adjust point light intensity and color based on generator health
+        if (pointLight != null)
+        {
+            // Dim the light as the generator takes more damage
+            float intensityPercentage = generatorHealth / generatorMaxHealth;
+            pointLight.intensity = Mathf.Lerp(0.1f, 1.0f, intensityPercentage); // Dims to 10% when generator is fully damaged
+
+            // Change color to red as health decreases
+            pointLight.color = Color.Lerp(Color.red, Color.white, intensityPercentage); // Fully red when generator health is 0
+        }
     }
+
+
+
 
     public void RepairGenerator(float amount)
     {
