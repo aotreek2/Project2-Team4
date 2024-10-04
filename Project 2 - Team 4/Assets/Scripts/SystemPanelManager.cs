@@ -74,6 +74,14 @@ public class SystemPanelManager : MonoBehaviour
                 systemNameText.text = "Hull";
                 systemDescriptionText.text = "Protects the ship from external threats.";
                 break;
+            case CubeInteraction.SystemType.Generator:
+                systemNameText.text = "Generator";
+                systemDescriptionText.text = "Provides power to ship systems.";
+                break;
+            default:
+                systemNameText.text = "Unknown System";
+                systemDescriptionText.text = "No description available.";
+                break;
         }
 
         // Play the open sound
@@ -178,18 +186,19 @@ public class SystemPanelManager : MonoBehaviour
         }
     }
 
-        void OnSacrificeButtonClicked()
+    void OnSacrificeButtonClicked()
     {
         // Sacrifice crew to instantly repair the system
         shipController.SacrificeCrewForRepair(5, currentSystemType);
         Debug.Log("Crew sacrificed to repair the system.");
 
-        // Update UI
-        shipController.UpdateSystemUI();
+        // Removed the call to UpdateSystemUI() since it no longer exists
+        // shipController.UpdateSystemUI();
+
         ClosePanelWithoutFade();
     }
 
-        void ClosePanelWithoutFade()
+    void ClosePanelWithoutFade()
     {
         // Close the panel immediately without fade
         panelCanvasGroup.alpha = 0f;
@@ -203,5 +212,4 @@ public class SystemPanelManager : MonoBehaviour
             fogOfWarOverlay.SetActive(false);
         }
     }
-
 }

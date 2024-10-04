@@ -3,15 +3,15 @@ using System.Collections;
 
 public class CubeInteraction : MonoBehaviour
 {
-    public enum SystemType { LifeSupport, Engines, Hull }
+    public enum SystemType { LifeSupport, Engines, Hull, Generator }
     public SystemType systemType;
 
-    public SystemPanelManager systemPanelManager; // Manually assign this in the Inspector
+    public SystemPanelManager systemPanelManager;
     private CrewMember assignedCrewMember;
 
-    public Renderer cubeRenderer; // Reference to the system part's renderer
+    public Renderer cubeRenderer;
     private Color defaultColor;
-    public Color repairingColor = Color.green; // Color when the system is being repaired
+    public Color repairingColor = Color.green;
 
     private bool isRepairing = false;
 
@@ -24,11 +24,10 @@ public class CubeInteraction : MonoBehaviour
 
         if (cubeRenderer != null)
         {
-            defaultColor = cubeRenderer.material.color; // Store the original color
+            defaultColor = cubeRenderer.material.color;
         }
     }
 
-    // This method is called when the cube is clicked to interact with the system
     public void SetSelectedCrewMember(CrewMember crewMember)
     {
         assignedCrewMember = crewMember;
@@ -41,7 +40,6 @@ public class CubeInteraction : MonoBehaviour
 
         Debug.Log("Crew member " + assignedCrewMember.crewName + " assigned to system: " + systemType);
 
-        // Assign the crew to the task with the cube's position as the destination
         assignedCrewMember.AssignToTask(CrewMember.Task.RepairHull, transform.position, FindObjectOfType<ShipController>(), this);
 
         if (systemPanelManager != null)
@@ -55,37 +53,33 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
-    // Method to start the repair when the crew enters the system trigger
     public void StartRepair(CrewMember crewMember, float efficiency)
     {
         if (!isRepairing)
         {
             isRepairing = true;
-            ChangeSystemColor(repairingColor); // Change color to indicate repair
+            ChangeSystemColor(repairingColor);
             Debug.Log("Repair started on system: " + systemType);
             StartCoroutine(RepairSystem(crewMember, efficiency));
         }
     }
 
-    // Coroutine to handle repair process
     private IEnumerator RepairSystem(CrewMember crewMember, float efficiency)
     {
         float repairProgress = 0f;
-        float adjustedRepairDuration = 5f / efficiency; // Adjust repair duration based on efficiency
+        float adjustedRepairDuration = 5f / efficiency;
 
         while (repairProgress < 1f)
         {
             repairProgress += Time.deltaTime / adjustedRepairDuration;
-            systemPanelManager.UpdateRepairProgress(repairProgress); // Update repair progress bar
+            systemPanelManager.UpdateRepairProgress(repairProgress);
             yield return null;
         }
 
-        // Once repair is completed
         CompleteRepair();
-        crewMember.CompleteTask(); // Notify the crew member that the task is complete
+        crewMember.CompleteTask();
     }
 
-    // Method to change the system's color
     public void ChangeSystemColor(Color newColor)
     {
         if (cubeRenderer != null)
@@ -94,28 +88,23 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
-    // Reset system's color after repair completion
     public void CompleteRepair()
     {
         isRepairing = false;
-        ChangeSystemColor(defaultColor); // Restore original color
+        ChangeSystemColor(defaultColor);
         Debug.Log("Repair completed on system: " + systemType);
 
-        // Repair the system in ShipController
-        FindObjectOfType<ShipController>().RepairSystem(systemType, 20f); // Adjust repair amount as needed
-
-        // Reset repair progress bar
+        FindObjectOfType<ShipController>().RepairSystem(systemType, 20f);
         systemPanelManager.UpdateRepairProgress(0f);
     }
 
-    // Trigger detection for the crew entering the repair zone
     private void OnTriggerEnter(Collider other)
     {
         CrewMember crewMember = other.GetComponent<CrewMember>();
         if (crewMember != null && crewMember == assignedCrewMember)
         {
             Debug.Log("Crew member " + crewMember.crewName + " has entered the repair zone.");
-            crewMember.EnterRepairZone(); // Let the crew member know they can start the repair
+            crewMember.EnterRepairZone();
         }
     }
 }
