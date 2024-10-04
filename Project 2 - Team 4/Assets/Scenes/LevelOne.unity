@@ -10846,6 +10846,42 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &247238974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 247238975}
+  m_Layer: 0
+  m_Name: Lights
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &247238975
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 247238974}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.9514675, y: 6.857027, z: 3.8968036}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 867871486}
+  - {fileID: 484754200}
+  - {fileID: 637413156}
+  - {fileID: 440408306}
+  - {fileID: 1194776642}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &251548621
 GameObject:
   m_ObjectHideFlags: 0
@@ -15387,12 +15423,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440408303}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 8.04, y: 4.39, z: 10.53}
-  m_LocalScale: {x: 64.156525, y: 13.303307, z: 4.40978}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -1.9114676, y: -2.4670272, z: 6.633196}
+  m_LocalScale: {x: 64.156525, y: 13.303308, z: 4.40978}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 247238975}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &442706894
 GameObject:
@@ -18095,12 +18131,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 484754197}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -15.55, y: 4.39, z: 10.465}
-  m_LocalScale: {x: 64.156525, y: 13.303307, z: 4.40978}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -25.501469, y: -2.4670272, z: 6.5681963}
+  m_LocalScale: {x: 64.156525, y: 13.303308, z: 4.40978}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 247238975}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!43 &486083133
 Mesh:
@@ -23751,12 +23787,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 637413153}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -9.78, y: 4.39, z: 0.05}
-  m_LocalScale: {x: 64.156525, y: 13.303307, z: 4.40978}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -19.731468, y: -2.4670272, z: -3.8468037}
+  m_LocalScale: {x: 64.156525, y: 13.303308, z: 4.40978}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 247238975}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!43 &651511830
 Mesh:
@@ -32023,6 +32059,7 @@ GameObject:
   - component: {fileID: 852831801}
   - component: {fileID: 852831799}
   - component: {fileID: 852831804}
+  - component: {fileID: 852831805}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -32224,17 +32261,39 @@ MonoBehaviour:
   enginesCube: {fileID: 714947088}
   hullCube: {fileID: 2087564734}
   generatorCube: {fileID: 2100602409}
+  crewCount: 20
+  resourceManager: {fileID: 852831800}
+  mainCamera: {fileID: 609081460}
+  hullDamageSound: {fileID: 0}
+  audioSource: {fileID: 852831799}
+  lightFlickerController: {fileID: 852831805}
+--- !u!114 &852831805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 852831798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efffac6829a45834aad136f6ee0fe622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   lights:
   - {fileID: 867871483}
   - {fileID: 484754197}
   - {fileID: 637413153}
   - {fileID: 440408303}
-  crewCount: 20
-  resourceManager: {fileID: 852831800}
-  mainCamera: {fileID: 609081460}
-  hullDamageSound: {fileID: 0}
-  audioSource: {fileID: 0}
   pointLight: {fileID: 1194776641}
+  maxFlickerDuration: 8
+  minFlickerOffTime: 0.05
+  maxFlickerOffTime: 1.5
+  minFlickerOnTime: 0.05
+  maxFlickerOnTime: 0.5
+  randomizeFlickerTiming: 1
+  minLightIntensity: 5
+  maxLightIntensity: 10
+  pointLightIntensityMultiplier: 2
 --- !u!1 &859337128
 GameObject:
   m_ObjectHideFlags: 0
@@ -32864,12 +32923,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 867871483}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -15.18, y: 4.39, z: -10.57}
-  m_LocalScale: {x: 64.156525, y: 13.303307, z: 4.40978}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -25.131468, y: -2.4670272, z: -14.466804}
+  m_LocalScale: {x: 64.156525, y: 13.303308, z: 4.40978}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 247238975}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &880638758
 GameObject:
@@ -45577,11 +45636,11 @@ Transform:
   m_GameObject: {fileID: 1194776639}
   serializedVersion: 2
   m_LocalRotation: {x: 0.78386354, y: -0, z: -0, w: 0.62093323}
-  m_LocalPosition: {x: 12.12, y: 17.65, z: 0.27}
+  m_LocalPosition: {x: 2.1685324, y: 10.792973, z: -3.6268036}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 247238975}
   m_LocalEulerAnglesHint: {x: 103.23102, y: 0, z: 0}
 --- !u!1 &1201536255
 GameObject:
@@ -82409,7 +82468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f78a2be167c3cfb4db41b3f0c4eaa862, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  systemType: 2
+  systemType: 3
   systemPanelManager: {fileID: 619027435}
   cubeRenderer: {fileID: 2100602414}
   repairingColor: {r: 0, g: 1, b: 0, a: 1}
@@ -84310,8 +84369,4 @@ SceneRoots:
   - {fileID: 1447172720}
   - {fileID: 264705173}
   - {fileID: 389457435}
-  - {fileID: 867871486}
-  - {fileID: 484754200}
-  - {fileID: 637413156}
-  - {fileID: 440408306}
-  - {fileID: 1194776642}
+  - {fileID: 247238975}

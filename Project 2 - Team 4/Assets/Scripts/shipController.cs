@@ -19,16 +19,15 @@ public class ShipController : MonoBehaviour
     public GameObject enginesCube;
     public GameObject hullCube;
     public GameObject generatorCube; // Generator cube
-    public GameObject[] lights; // Lights affected by generator health
     public int crewCount = 20; // Starting crew count
 
     public ResourceManager resourceManager;
     public Camera mainCamera;
     public AudioClip hullDamageSound;
     public AudioSource audioSource; // Reference to the main camera
-    public Light pointLight; // The point light over the ship
 
-    
+    // Reference to the LightFlickerController
+    public LightFlickerController lightFlickerController;
 
     void Start()
     {
@@ -50,9 +49,22 @@ public class ShipController : MonoBehaviour
             }
         }
 
-        if (lights == null || lights.Length == 0)
+        // Initialize the LightFlickerController
+        if (lightFlickerController == null)
         {
-            Debug.LogError("Lights array is not assigned or empty. Please assign the lights in the inspector.");
+            lightFlickerController = FindObjectOfType<LightFlickerController>();
+            if (lightFlickerController == null)
+            {
+                Debug.LogError("LightFlickerController not found in the scene. Please assign it in the inspector.");
+            }
+            else
+            {
+                lightFlickerController.Initialize(generatorMaxHealth);
+            }
+        }
+        else
+        {
+            lightFlickerController.Initialize(generatorMaxHealth);
         }
 
         // Initialize cubes' colors
@@ -63,7 +75,6 @@ public class ShipController : MonoBehaviour
     {
         UpdateSystems();
         UpdateSystemCubes();
-        UpdateLights();
     }
 
     // Update efficiencies and system statuses
@@ -81,13 +92,18 @@ public class ShipController : MonoBehaviour
         float generatorHealthPercentage = generatorHealth / generatorMaxHealth;
         resourceManager.generatorEfficiency = Mathf.Clamp(generatorHealthPercentage, 0.1f, 1.2f);
 
+        // Update the light flickering based on generator health
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.UpdateGeneratorHealth(generatorHealth);
+        }
+
         // Check for generator failure
         if (generatorHealth <= 0f)
         {
             Debug.Log("Generator is down! Systems are losing power.");
             ReduceLifeSupportEfficiency(50f); // Reduce life support efficiency if generator fails
             ShakeCamera(0.5f, 1.0f); // Trigger camera shake when generator fails
-            FlickerLights(1.0f); // Trigger lights flickering when generator fails
         }
     }
 
@@ -110,37 +126,6 @@ public class ShipController : MonoBehaviour
                 renderer.material.color = healthColor;
             }
         }
-    }
-
-    void UpdateLights()
-    {
-        bool lightsOn = generatorHealth > 0;
-        foreach (GameObject lightObject in lights)
-        {
-            if (lightObject != null)
-            {
-                Light lightComponent = lightObject.GetComponent<Light>();
-                if (lightComponent != null)
-                {
-                    if (lightComponent.type == LightType.Directional)
-                    {
-                        // Instead of enabling/disabling directional light, change its intensity
-                        lightComponent.intensity = lightsOn ? 1.0f : 0.0f;
-                    }
-                    else
-                    {
-                        // For other light types, enable/disable them as usual
-                        lightComponent.enabled = lightsOn;
-                    }
-                }
-            }
-        }
-    }
-
-    public void FlickerLights(float flickerDuration)
-    {
-        Debug.Log("FlickerLights called with duration: " + flickerDuration);
-        StartCoroutine(FlickerLightsCoroutine(flickerDuration));
     }
 
     public void ShakeCamera(float duration, float magnitude)
@@ -176,51 +161,6 @@ public class ShipController : MonoBehaviour
         mainCamera.transform.localPosition = originalPosition;
     }
 
-
-    private IEnumerator FlickerLightsCoroutine(float duration)
-    {
-        if (lights == null || lights.Length == 0)
-        {
-            Debug.LogError("Lights array is null or empty. Cannot flicker lights.");
-            yield break;
-        }
-
-        float elapsed = 0f;
-        bool lightsOn = true;
-
-        while (elapsed < duration)
-        {
-            lightsOn = !lightsOn;
-            foreach (GameObject lightObject in lights)
-            {
-                if (lightObject != null)
-                {
-                    Light lightComponent = lightObject.GetComponent<Light>();
-                    if (lightComponent != null)
-                    {
-                        lightComponent.enabled = lightsOn;
-                    }
-                }
-            }
-
-            elapsed += 0.1f;  // Flicker every 0.1 seconds
-            yield return new WaitForSecondsRealtime(0.1f); // Adjust this to change the flicker speed
-        }
-
-        // Ensure lights are on after flickering
-        foreach (GameObject lightObject in lights)
-        {
-            if (lightObject != null)
-            {
-                Light lightComponent = lightObject.GetComponent<Light>();
-                if (lightComponent != null)
-                {
-                    lightComponent.enabled = true;
-                }
-            }
-        }
-    }
-
     // Repair system method
     public void RepairSystem(CubeInteraction.SystemType systemType, float repairAmount)
     {
@@ -248,6 +188,13 @@ public class ShipController : MonoBehaviour
                 generatorHealth += repairAmount;
                 generatorHealth = Mathf.Clamp(generatorHealth, 0f, generatorMaxHealth);
                 Debug.Log("Generator repaired by " + repairAmount + " points.");
+
+                // Reset the lights to normal after repair
+                if (lightFlickerController != null)
+                {
+                    lightFlickerController.UpdateGeneratorHealth(generatorHealth);
+                    lightFlickerController.StabilizeLights();
+                }
                 break;
         }
     }
@@ -261,7 +208,10 @@ public class ShipController : MonoBehaviour
 
         // Trigger effects when engine is damaged
         ShakeCamera(0.5f, 1.0f);
-        FlickerLights(0.5f);
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.TriggerMinorFlicker();
+        }
     }
 
     public void RepairEngine(float amount)
@@ -279,7 +229,10 @@ public class ShipController : MonoBehaviour
 
         // Trigger effects when life support is damaged
         ShakeCamera(0.5f, 1.0f);
-        FlickerLights(0.5f);
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.TriggerMinorFlicker();
+        }
     }
 
     public void RepairLifeSupport(float amount)
@@ -303,7 +256,10 @@ public class ShipController : MonoBehaviour
 
         // Trigger effects when hull is damaged
         ShakeCamera(0.5f, 1.0f);
-        FlickerLights(0.5f);
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.TriggerMinorFlicker();
+        }
     }
 
     public void RepairHull(float amount)
@@ -319,32 +275,29 @@ public class ShipController : MonoBehaviour
         generatorHealth = Mathf.Clamp(generatorHealth, 0f, generatorMaxHealth);
         Debug.Log("Generator damaged by " + damage + " points.");
 
-        // Flicker the other lights when the generator is damaged
-        FlickerLights(0.5f); 
-
         // Trigger camera shake when generator is damaged
         ShakeCamera(0.5f, 1.0f);
 
-        // Adjust point light intensity and color based on generator health
-        if (pointLight != null)
+        // Update light flicker controller with new generator health and trigger major flicker
+        if (lightFlickerController != null)
         {
-            // Dim the light as the generator takes more damage
-            float intensityPercentage = generatorHealth / generatorMaxHealth;
-            pointLight.intensity = Mathf.Lerp(0.1f, 1.0f, intensityPercentage); // Dims to 10% when generator is fully damaged
-
-            // Change color to red as health decreases
-            pointLight.color = Color.Lerp(Color.red, Color.white, intensityPercentage); // Fully red when generator health is 0
+            lightFlickerController.UpdateGeneratorHealth(generatorHealth);
+            lightFlickerController.TriggerMajorFlicker();
         }
     }
-
-
-
 
     public void RepairGenerator(float amount)
     {
         generatorHealth += amount;
         generatorHealth = Mathf.Clamp(generatorHealth, 0f, generatorMaxHealth);
         Debug.Log("Generator repaired by " + amount + " points.");
+
+        // Reset the lights to normal after repair
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.UpdateGeneratorHealth(generatorHealth);
+            lightFlickerController.StabilizeLights();
+        }
     }
 
     // Methods to support DecisionPanelManager
@@ -372,6 +325,11 @@ public class ShipController : MonoBehaviour
         hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
         Debug.Log($"Hull integrity reduced by {percentage}%.");
         ShakeCamera(0.5f, 1.0f); // Trigger camera shake when hull integrity is reduced
+
+        if (lightFlickerController != null)
+        {
+            lightFlickerController.TriggerMinorFlicker();
+        }
     }
 
     // Reduce life support system's efficiency
@@ -419,5 +377,4 @@ public class ShipController : MonoBehaviour
         crewCount += amount;
         Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
     }
-
 }
