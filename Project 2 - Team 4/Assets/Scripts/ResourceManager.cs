@@ -17,6 +17,11 @@ public class ResourceManager : MonoBehaviour
     // Scrap Resource
     public float scrapAmount = 50f; // Starting amount of Scrap
 
+    // Audio Reosurces - Ahmed 
+
+    public AudioSource oxygenLowSFX, fuelLowSFX;
+    public AudioClip oxygenLowClip, fuelLowClip;
+
     // UI Elements
     public TextMeshProUGUI oxygenText;
     public TextMeshProUGUI fuelText;
@@ -69,6 +74,8 @@ public class ResourceManager : MonoBehaviour
         oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f);
         fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f);
         distanceToLighthouse = Mathf.Clamp(distanceToLighthouse, 0f, 1000f);
+
+        HandleIntercomUpdates();
     }
 
 
@@ -88,6 +95,25 @@ public class ResourceManager : MonoBehaviour
 
         if (moraleText != null)
             moraleText.text = "Crew Morale: " + shipController.crewMorale.ToString("F0") + "%";
+    }
+
+    void HandleIntercomUpdates()
+    {
+        if (oxygenLevel <= 50f)
+        {
+            if (!oxygenLowSFX.isPlaying)
+            {
+                oxygenLowSFX.PlayOneShot(oxygenLowClip);
+            }
+        }
+
+        if (fuelAmount <= 50f)
+        {
+            if (!fuelLowSFX.isPlaying)
+            {
+                fuelLowSFX.PlayOneShot(fuelLowClip);
+            }
+        }
     }
 
     void CheckGameOver()

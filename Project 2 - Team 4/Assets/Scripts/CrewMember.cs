@@ -22,6 +22,8 @@ public class CrewMember : MonoBehaviour
 
     public Renderer crewRenderer; // Reference to the crew member's Renderer to indicate selection
 
+    public AudioSource walkingSFX, selectedSFX, assignedSFX;
+
     // References
     private ShipController shipController;
     private CubeInteraction currentCubeInteraction; // Reference to the cube (system part)
@@ -65,6 +67,7 @@ public class CrewMember : MonoBehaviour
     public void Select()
     {
         HighlightSelection(true); // Highlight the crew member when selected
+        selectedSFX.Play();
         Debug.Log(crewName + " is selected.");
     }
 
@@ -92,8 +95,10 @@ public class CrewMember : MonoBehaviour
 
         if (navAgent != null)
         {
+            assignedSFX.Play();
             navAgent.isStopped = false; // Ensure the agent is not stopped
             navAgent.SetDestination(destination); // Move to the destination
+            walkingSFX.Play();
         }
 
         Deselect(); // Deselect the crew member to allow movement
@@ -122,7 +127,7 @@ public class CrewMember : MonoBehaviour
     void PerformTask()
     {
         isPerformingTask = true;
-
+        walkingSFX.Stop();
         // Adjust task efficiency based on morale and fatigue
         float actualEfficiency = taskEfficiency * (morale / 100f) * ((100f - fatigue) / 100f);
         currentCubeInteraction.StartRepair(this, actualEfficiency);
