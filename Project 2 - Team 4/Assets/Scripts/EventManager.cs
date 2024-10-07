@@ -7,6 +7,9 @@ public class EventManager : MonoBehaviour
     public LifeSupportController lifeSupportController; // Reference to the new LifeSupportController
     public DecisionPanelManager decisionManager;
 
+    //Audio (Ahmed)
+    public AudioSource eventAudio;
+    public AudioClip asteroidHit;
     void Start()
     {
         // Assign the ShipController if not set
@@ -94,6 +97,10 @@ public class EventManager : MonoBehaviour
             case 1:
                 // Asteroid collision damages hull
                 StartCoroutine(HandleAsteroidEvent());
+                if (!eventAudio.isPlaying)
+                {
+                    eventAudio.PlayOneShot(asteroidHit);
+                }
                 break;
 
             case 2:

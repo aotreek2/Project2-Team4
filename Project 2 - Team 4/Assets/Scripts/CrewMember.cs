@@ -22,6 +22,8 @@ public class CrewMember : MonoBehaviour
 
     public Renderer crewRenderer; // Reference to the crew member's Renderer to indicate selection
 
+    public Animator crewAnimator;
+
     public AudioSource walkingSFX, selectedSFX, assignedSFX;
 
     // References
@@ -40,6 +42,8 @@ public class CrewMember : MonoBehaviour
 
         // Find ShipController if not assigned
         shipController = FindObjectOfType<ShipController>();
+        crewAnimator = GetComponent<Animator>();
+        //crewAnimator.SetFloat("Health", health); //Sets the health varaible to the death animation. (Ahmed added this)
     }
 
     void Update()
