@@ -5,6 +5,8 @@ public class EventManager : MonoBehaviour
 {
     public ShipController shipController;
     public LifeSupportController lifeSupportController; // Reference to the new LifeSupportController
+    public HullSystemController hullSystemController;  // Reference to the new HullSystemController
+    public EngineSystemController engineSystemController; // Reference to the new EngineSystemController
     public DecisionPanelManager decisionManager;
 
     void Start()
@@ -19,6 +21,18 @@ public class EventManager : MonoBehaviour
         if (lifeSupportController == null)
         {
             lifeSupportController = FindObjectOfType<LifeSupportController>();
+        }
+
+        // Assign the HullSystemController if not set
+        if (hullSystemController == null)
+        {
+            hullSystemController = FindObjectOfType<HullSystemController>();
+        }
+
+        // Assign the EngineSystemController if not set
+        if (engineSystemController == null)
+        {
+            engineSystemController = FindObjectOfType<EngineSystemController>();
         }
 
         // Assign the DecisionManager if not set
@@ -132,7 +146,7 @@ public class EventManager : MonoBehaviour
                 "A fire has damaged the Life Support system. What will you do?",
                 "Option 1: Sacrifice 5 crew to repair Life Support.",
                 "Option 2: Save crew but reduce Life Support efficiency by 50%.",
-                shipController // Pass LifeSupportController here
+                shipController
             );
         }
     }
@@ -157,10 +171,10 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    // Coroutine for Asteroid Event
+    // Coroutine for Asteroid Event (Uses HullSystemController)
     private IEnumerator HandleAsteroidEvent()
     {
-        shipController.DamageHull(30f);
+        hullSystemController.DamageHull(30f); // Call HullSystemController for hull damage
         Debug.Log("Event: Asteroid collision! Hull integrity reduced.");
 
         // Wait for effects to finish
@@ -177,11 +191,14 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    // Coroutine for System Failure Event
+    // Coroutine for System Failure Event (Uses EngineSystemController)
     private IEnumerator HandleSystemFailureEvent()
     {
-        shipController.DamageEngine(25f);
-        Debug.Log("Event: System failure! Engines damaged.");
+        if (engineSystemController != null)
+        {
+            engineSystemController.DamageEngine(25f); // Call EngineSystemController for engine damage
+            Debug.Log("Event: System failure! Engines damaged.");
+        }
 
         // Wait for effects to finish
         yield return new WaitForSeconds(1.0f);

@@ -18,6 +18,8 @@ public class DecisionPanelManager : MonoBehaviour
 
     private ShipController shipController;
     private LifeSupportController lifeSupportController; // Reference to LifeSupportController
+    private HullSystemController hullSystemController; // Reference to HullSystemController
+    private EngineSystemController engineSystemController; // Reference to EngineSystemController
     private string currentEvent;
 
     void Start()
@@ -45,6 +47,16 @@ public class DecisionPanelManager : MonoBehaviour
         if (lifeSupportController == null)
         {
             lifeSupportController = FindObjectOfType<LifeSupportController>();
+        }
+
+        if (hullSystemController == null)
+        {
+            hullSystemController = FindObjectOfType<HullSystemController>();
+        }
+
+        if (engineSystemController == null)
+        {
+            engineSystemController = FindObjectOfType<EngineSystemController>();
         }
     }
 
@@ -90,7 +102,7 @@ public class DecisionPanelManager : MonoBehaviour
         else if (currentEvent.Contains("asteroid"))
         {
             shipController.SacrificeCrew(10);
-            shipController.RepairHull(50f);
+            hullSystemController.RepairHull(50f);
             Debug.Log("Option 1: Sacrificed 10 crew to repair the hull.");
         }
         else if (currentEvent.Contains("derelict"))
@@ -105,7 +117,7 @@ public class DecisionPanelManager : MonoBehaviour
             }
             else
             {
-                shipController.DamageHull(30f);
+                hullSystemController.DamageHull(30f);
                 shipController.SacrificeCrew(5);
                 shipController.AdjustCrewMorale(-20f);
                 Debug.Log("Pirates ambushed you. Lost 5 crew and hull integrity reduced. Morale decreased.");
@@ -114,7 +126,7 @@ public class DecisionPanelManager : MonoBehaviour
         else if (currentEvent.Contains("system failure"))
         {
             shipController.SacrificeCrew(10);
-            shipController.RepairEngine(50f);
+            engineSystemController.RepairEngine(50f); // Updated to use EngineSystemController
             Debug.Log("Option 1: Sacrificed 10 crew to repair the engines.");
         }
         else if (currentEvent.Contains("generator"))
@@ -138,7 +150,7 @@ public class DecisionPanelManager : MonoBehaviour
         }
         else if (currentEvent.Contains("asteroid"))
         {
-            shipController.ReduceHullIntegrity(50f);
+            hullSystemController.ReduceHullIntegrity(50f);
             shipController.AdjustCrewMorale(-10f);
             Debug.Log("Option 2: Reduced hull integrity by 50% to save crew.");
         }
@@ -150,7 +162,7 @@ public class DecisionPanelManager : MonoBehaviour
         }
         else if (currentEvent.Contains("system failure"))
         {
-            shipController.ReduceEngineEfficiency(50f);
+            engineSystemController.ReduceEngineEfficiency(50f); // Updated to use EngineSystemController
             shipController.AdjustCrewMorale(-10f);
             Debug.Log("Option 2: Reduced engine efficiency by 50% to save crew.");
         }
@@ -158,7 +170,6 @@ public class DecisionPanelManager : MonoBehaviour
         {
             shipController.AdjustCrewMorale(-15f);
             Debug.Log("Option 2: Accepted reduced efficiency for other systems to save crew.");
-            // Optionally, you can implement further logic here if needed
         }
 
         shipController.resourceManager.UpdateResourceUI();
@@ -214,5 +225,4 @@ public class DecisionPanelManager : MonoBehaviour
         decisionPanelCanvasGroup.interactable = false;
         decisionPanelCanvasGroup.blocksRaycasts = false;
     }
-
 }

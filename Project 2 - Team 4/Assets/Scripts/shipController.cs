@@ -4,17 +4,10 @@ using System.Collections;
 public class ShipController : MonoBehaviour
 {
     // Existing fields and variables
-    public float engineHealth = 100f;
-    public float hullIntegrity = 100f;
     public float crewMorale = 100f; // Overall crew morale
     public float generatorHealth = 100f; // Generator health
-
-    public float engineMaxHealth = 100f;
-    public float hullMaxIntegrity = 100f;
     public float generatorMaxHealth = 100f; // Max health for generator
 
-    public GameObject enginesCube;
-    public GameObject hullCube;
     public GameObject generatorCube; // Generator cube
     public int crewCount = 20; // Starting crew count
 
@@ -23,8 +16,11 @@ public class ShipController : MonoBehaviour
     public AudioClip hullDamageSound;
     public AudioSource audioSource; // Reference to the main camera
 
-    // Reference to the LightFlickerController
+    // References to system controllers
+    public HullSystemController hullSystemController;
     public LightFlickerController lightFlickerController;
+    public LifeSupportController lifeSupportController;
+    public EngineSystemController engineSystemController; // Add Engine System Controller
 
     void Start()
     {
@@ -46,6 +42,16 @@ public class ShipController : MonoBehaviour
             }
         }
 
+        // Initialize the HullSystemController
+        if (hullSystemController == null)
+        {
+            hullSystemController = FindObjectOfType<HullSystemController>();
+            if (hullSystemController == null)
+            {
+                Debug.LogError("HullSystemController not found. Ensure it's properly set in the scene.");
+            }
+        }
+
         // Initialize the LightFlickerController
         if (lightFlickerController == null)
         {
@@ -57,6 +63,16 @@ public class ShipController : MonoBehaviour
             else
             {
                 lightFlickerController.Initialize(generatorMaxHealth);
+            }
+        }
+
+        // Initialize the EngineSystemController
+        if (engineSystemController == null)
+        {
+            engineSystemController = FindObjectOfType<EngineSystemController>();
+            if (engineSystemController == null)
+            {
+                Debug.LogError("EngineSystemController not found. Ensure it's properly set in the scene.");
             }
         }
 
@@ -73,10 +89,6 @@ public class ShipController : MonoBehaviour
     // Update efficiencies and system statuses
     void UpdateSystems()
     {
-        // Update engine efficiency
-        float engineHealthPercentage = engineHealth / engineMaxHealth;
-        resourceManager.engineEfficiency = Mathf.Clamp(engineHealthPercentage, 0.1f, 1.2f);
-
         // Update generator efficiency
         float generatorHealthPercentage = generatorHealth / generatorMaxHealth;
         resourceManager.generatorEfficiency = Mathf.Clamp(generatorHealthPercentage, 0.1f, 1.2f);
@@ -97,9 +109,18 @@ public class ShipController : MonoBehaviour
 
     void UpdateSystemCubes()
     {
-        UpdateCubeColor(enginesCube, engineHealth / engineMaxHealth);
-        UpdateCubeColor(hullCube, hullIntegrity / hullMaxIntegrity);
+        if (engineSystemController != null)
+        {
+            UpdateCubeColor(engineSystemController.enginesCube, engineSystemController.engineHealth / engineSystemController.engineMaxHealth);
+        }
+
         UpdateCubeColor(generatorCube, generatorHealth / generatorMaxHealth);
+
+        // Call the UpdateCubeColor method in HullSystemController
+        if (hullSystemController != null)
+        {
+            hullSystemController.UpdateHullCubeColor();
+        }
     }
 
     void UpdateCubeColor(GameObject cube, float healthPercentage)
@@ -148,85 +169,21 @@ public class ShipController : MonoBehaviour
         mainCamera.transform.localPosition = originalPosition;
     }
 
-    // Repair system method
-    public void RepairSystem(CubeInteraction.SystemType systemType, float repairAmount)
-    {
-        switch (systemType)
-        {
-            case CubeInteraction.SystemType.Engines:
-                engineHealth += repairAmount;
-                engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
-                Debug.Log("Engine repaired by " + repairAmount + " points.");
-                break;
-
-            case CubeInteraction.SystemType.Hull:
-                hullIntegrity += repairAmount;
-                hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
-                Debug.Log("Hull repaired by " + repairAmount + " points.");
-                break;
-
-            case CubeInteraction.SystemType.Generator:
-                generatorHealth += repairAmount;
-                generatorHealth = Mathf.Clamp(generatorHealth, 0f, generatorMaxHealth);
-                Debug.Log("Generator repaired by " + repairAmount + " points.");
-
-                // Reset the lights to normal after repair
-                if (lightFlickerController != null)
-                {
-                    lightFlickerController.UpdateGeneratorHealth(generatorHealth);
-                    lightFlickerController.StabilizeLights();
-                }
-                break;
-        }
-    }
-
-    // Methods for damaging and repairing systems
+    // Forward engine-related calls to EngineSystemController
     public void DamageEngine(float damage)
     {
-        engineHealth -= damage;
-        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
-        Debug.Log("Engine damaged by " + damage + " points.");
-
-        // Trigger effects when engine is damaged
-        ShakeCamera(0.5f, 1.0f);
-        if (lightFlickerController != null)
+        if (engineSystemController != null)
         {
-            lightFlickerController.TriggerMinorFlicker();
+            engineSystemController.DamageEngine(damage);
         }
     }
 
     public void RepairEngine(float amount)
     {
-        engineHealth += amount;
-        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
-        Debug.Log("Engine repaired by " + amount + " points.");
-    }
-
-    public void DamageHull(float damage)
-    {
-        hullIntegrity -= damage;
-        hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
-        Debug.Log("Hull damaged by " + damage + " points.");
-
-        // Play sound effect
-        if (audioSource != null && hullDamageSound != null)
+        if (engineSystemController != null)
         {
-            audioSource.PlayOneShot(hullDamageSound);
+            engineSystemController.RepairEngine(amount);
         }
-
-        // Trigger effects when hull is damaged
-        ShakeCamera(0.5f, 1.0f);
-        if (lightFlickerController != null)
-        {
-            lightFlickerController.TriggerMinorFlicker();
-        }
-    }
-
-    public void RepairHull(float amount)
-    {
-        hullIntegrity += amount;
-        hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
-        Debug.Log("Hull repaired by " + amount + " points.");
     }
 
     public void DamageGenerator(float damage)
@@ -260,9 +217,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    // Methods to support DecisionPanelManager
-
-    // Sacrifice crew members to stabilize systems
     public void SacrificeCrew(int amount)
     {
         if (crewCount >= amount)
@@ -274,21 +228,6 @@ public class ShipController : MonoBehaviour
         else
         {
             Debug.Log("Not enough crew members to sacrifice.");
-        }
-    }
-
-    // Reduce the hull integrity by a percentage
-    public void ReduceHullIntegrity(float percentage)
-    {
-        float reduction = hullMaxIntegrity * (percentage / 100f);
-        hullIntegrity -= reduction;
-        hullIntegrity = Mathf.Clamp(hullIntegrity, 0f, hullMaxIntegrity);
-        Debug.Log($"Hull integrity reduced by {percentage}%.");
-        ShakeCamera(0.5f, 1.0f); // Trigger camera shake when hull integrity is reduced
-
-        if (lightFlickerController != null)
-        {
-            lightFlickerController.TriggerMinorFlicker();
         }
     }
 
@@ -306,15 +245,52 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    public void SacrificeCrewForRepair(int amount, CubeInteraction.SystemType systemType)
+    public void AddCrew(int amount)
     {
-        if (crewCount >= amount)
-        {
-            crewCount -= amount;
-            Debug.Log($"{amount} crew members sacrificed to repair {systemType}.");
+        crewCount += amount;
+        Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
+    }
 
-            // Instantly repair the system
-            RepairSystem(systemType, 100f);
+    public void DamageHull(float damageAmount)
+    {
+        if (hullSystemController != null)
+        {
+            hullSystemController.DamageHull(damageAmount);
+        }
+    }
+
+    public void RepairHull(float repairAmount)
+    {
+        if (hullSystemController != null)
+        {
+            hullSystemController.RepairHull(repairAmount);
+        }
+    }
+
+    public void SacrificeCrewForRepair(int crewAmount, CubeInteraction.SystemType systemType)
+    {
+        if (crewCount >= crewAmount)
+        {
+            crewCount -= crewAmount;
+            Debug.Log($"{crewAmount} crew members sacrificed to repair {systemType}.");
+
+            // Repair the system fully
+            switch (systemType)
+            {
+                case CubeInteraction.SystemType.Engines:
+                    engineSystemController.RepairEngine(100f); // Fully repair the engine
+                    break;
+                case CubeInteraction.SystemType.Hull:
+                    hullSystemController.RepairHull(100f); // Fully repair the hull
+                    break;
+                case CubeInteraction.SystemType.LifeSupport:
+                    lifeSupportController.RepairLifeSupport(100f); // Fully repair life support
+                    break;
+                case CubeInteraction.SystemType.Generator:
+                    RepairGenerator(100f); // Fully repair the generator
+                    break;
+            }
+
             AdjustCrewMorale(-20f); // Decrease morale due to sacrifice
         }
         else
@@ -323,19 +299,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    public void AddCrew(int amount)
-    {
-        crewCount += amount;
-        Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
-    }
-
-    public void ReduceEngineEfficiency(float percentage)
-    {
-        // Assuming engineHealth directly impacts efficiency
-        float reduction = engineMaxHealth * (percentage / 100f);
-        engineHealth -= reduction;
-        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
-        Debug.Log($"Engine efficiency reduced by {percentage}%.");
-    }
+    
 
 }
