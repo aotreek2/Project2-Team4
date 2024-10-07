@@ -192,9 +192,6 @@ public class SystemPanelManager : MonoBehaviour
         shipController.SacrificeCrewForRepair(5, currentSystemType);
         Debug.Log("Crew sacrificed to repair the system.");
 
-        // Removed the call to UpdateSystemUI() since it no longer exists
-        // shipController.UpdateSystemUI();
-
         ClosePanelWithoutFade();
     }
 

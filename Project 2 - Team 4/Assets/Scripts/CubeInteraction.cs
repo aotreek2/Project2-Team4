@@ -94,17 +94,26 @@ public class CubeInteraction : MonoBehaviour
         ChangeSystemColor(defaultColor);
         Debug.Log("Repair completed on system: " + systemType);
 
-        FindObjectOfType<ShipController>().RepairSystem(systemType, 20f);
+        switch (systemType)
+        {
+            case SystemType.LifeSupport:
+                FindObjectOfType<LifeSupportController>().RepairLifeSupport(20f); // Use LifeSupportController for LifeSupport repairs
+                break;
+
+            case SystemType.Engines:
+                FindObjectOfType<ShipController>().RepairEngine(20f); // Use ShipController for Engine repairs
+                break;
+
+            case SystemType.Hull:
+                FindObjectOfType<HullSystemController>().RepairHull(20f); // Use HullSystemController for Hull repairs
+                break;
+
+            case SystemType.Generator:
+                FindObjectOfType<ShipController>().RepairGenerator(20f); // Use ShipController for Generator repairs
+                break;
+        }
+
         systemPanelManager.UpdateRepairProgress(0f);
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        CrewMember crewMember = other.GetComponent<CrewMember>();
-        if (crewMember != null && crewMember == assignedCrewMember)
-        {
-            Debug.Log("Crew member " + crewMember.crewName + " has entered the repair zone.");
-            crewMember.EnterRepairZone();
-        }
-    }
 }
