@@ -42636,8 +42636,8 @@ MonoBehaviour:
   hullSystemController: {fileID: 2087564741}
   engineSystemController: {fileID: 714947095}
   decisionManager: {fileID: 699162546}
-  eventAudio: {fileID: 0}
-  asteroidHit: {fileID: 0}
+  eventAudio: {fileID: 852831799}
+  asteroidHit: {fileID: 8300000, guid: 5d2557ef716981e429b9ca1c62f36cf4, type: 3}
 --- !u!4 &852831803
 Transform:
   m_ObjectHideFlags: 0
@@ -100446,6 +100446,7 @@ GameObject:
   - component: {fileID: 2100602413}
   - component: {fileID: 2100602412}
   - component: {fileID: 2100602411}
+  - component: {fileID: 2100602416}
   m_Layer: 9
   m_Name: generators
   m_TagString: System
@@ -100576,6 +100577,30 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2100602409}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2100602416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100602409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efffac6829a45834aad136f6ee0fe622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lights:
+  - {fileID: 867871483}
+  - {fileID: 484754197}
+  - {fileID: 637413153}
+  - {fileID: 440408303}
+  pointLight: {fileID: 1194776641}
+  maxFlickerDuration: 8
+  minFlickerOffTime: 0.05
+  maxFlickerOffTime: 1.5
+  minFlickerOnTime: 0.05
+  maxFlickerOnTime: 0.5
+  randomizeFlickerTiming: 1
 --- !u!43 &2107735189
 Mesh:
   m_ObjectHideFlags: 0

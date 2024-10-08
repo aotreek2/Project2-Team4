@@ -15,6 +15,10 @@ public class LightFlickerController : MonoBehaviour
     public float maxFlickerOnTime = 0.5f; // Maximum time lights stay on based on damage
     public bool randomizeFlickerTiming = true; // Whether to randomize flicker times per light
 
+    [Header("Light Intensity Settings")]
+    public float minLightIntensity = 1.0f; // Minimum intensity when lights are on
+    public float maxLightIntensity = 2.5f; // Maximum intensity when lights are on
+
     private float generatorHealth;
     private float generatorMaxHealth = 100f;
     private bool isFlickering = false;
@@ -49,7 +53,7 @@ public class LightFlickerController : MonoBehaviour
     {
         FlickerLights(false);
         yield return new WaitForSeconds(0.1f);
-        FlickerLights(true);
+        FlickerLights(true, maxLightIntensity);
     }
 
     private IEnumerator DramaticFlickerLightsCoroutine(float damagePercentage)
@@ -90,12 +94,13 @@ public class LightFlickerController : MonoBehaviour
             {
                 foreach (GameObject lightObject in lights)
                 {
-                    StartCoroutine(RandomFlickerLight(lightObject, true, Random.Range(0f, 0.2f))); // Random delay before turning on
+                    StartCoroutine(RandomFlickerLight(lightObject, true, Random.Range(0f, 0.2f)));
                 }
             }
             else
             {
-                FlickerLights(true, Random.Range(0.3f, Mathf.Lerp(0.5f, 1.0f, 1 - damagePercentage)));
+                float intensity = Random.Range(minLightIntensity, maxLightIntensity);
+                FlickerLights(true, intensity);
             }
 
             float onDuration = Random.Range(flickerOnTime, flickerOnTime * 1.2f);
@@ -119,12 +124,12 @@ public class LightFlickerController : MonoBehaviour
             {
                 foreach (GameObject lightObject in lights)
                 {
-                    StartCoroutine(RandomFlickerLight(lightObject, false, Random.Range(0f, 0.2f))); // Random delay before turning off
+                    StartCoroutine(RandomFlickerLight(lightObject, false, Random.Range(0f, 0.2f)));
                 }
             }
             else
             {
-                FlickerLights(false); // Turn off all lights at once
+                FlickerLights(false);
             }
 
             yield return new WaitForSeconds(Random.Range(0.05f, flickerDuration));
@@ -133,12 +138,13 @@ public class LightFlickerController : MonoBehaviour
             {
                 foreach (GameObject lightObject in lights)
                 {
-                    StartCoroutine(RandomFlickerLight(lightObject, true, Random.Range(0f, 0.2f))); // Random delay before turning on
+                    StartCoroutine(RandomFlickerLight(lightObject, true, Random.Range(0f, 0.2f)));
                 }
             }
             else
             {
-                FlickerLights(true, Random.Range(0.5f, 1.0f)); // Turn on all lights at once
+                float intensity = Random.Range(minLightIntensity, maxLightIntensity);
+                FlickerLights(true, intensity);
             }
 
             yield return new WaitForSeconds(Random.Range(0.05f, flickerDuration));
@@ -150,7 +156,7 @@ public class LightFlickerController : MonoBehaviour
 
     private IEnumerator RandomFlickerLight(GameObject lightObject, bool turnOn, float delay)
     {
-        yield return new WaitForSeconds(delay); // Random delay before each light flickers
+        yield return new WaitForSeconds(delay);
 
         if (lightObject != null)
         {
@@ -160,7 +166,7 @@ public class LightFlickerController : MonoBehaviour
                 lightComponent.enabled = turnOn;
                 if (turnOn)
                 {
-                    lightComponent.intensity = Random.Range(0.3f, 1.0f); // Vary intensity when turning on
+                    lightComponent.intensity = Random.Range(minLightIntensity, maxLightIntensity);
                 }
             }
         }
@@ -195,7 +201,7 @@ public class LightFlickerController : MonoBehaviour
                 if (lightComponent != null)
                 {
                     lightComponent.enabled = true;
-                    lightComponent.intensity = Mathf.Lerp(0.2f, 1.0f, generatorHealth / generatorMaxHealth); // Stabilize lights based on health
+                    lightComponent.intensity = Mathf.Lerp(minLightIntensity, maxLightIntensity, generatorHealth / generatorMaxHealth);
                 }
             }
         }
@@ -204,8 +210,8 @@ public class LightFlickerController : MonoBehaviour
         if (pointLight != null)
         {
             float intensityPercentage = generatorHealth / generatorMaxHealth;
-            pointLight.intensity = Mathf.Lerp(0.1f, 1.0f, intensityPercentage); // Dim the light
-            pointLight.color = Color.Lerp(Color.red, Color.white, intensityPercentage); // Shift color to red as health decreases
+            pointLight.intensity = Mathf.Lerp(minLightIntensity, maxLightIntensity, intensityPercentage);
+            pointLight.color = Color.Lerp(Color.red, Color.white, intensityPercentage);
         }
     }
 }
