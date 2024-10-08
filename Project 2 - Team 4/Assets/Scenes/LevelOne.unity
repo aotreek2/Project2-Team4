@@ -42464,7 +42464,6 @@ GameObject:
   - component: {fileID: 852831801}
   - component: {fileID: 852831799}
   - component: {fileID: 852831804}
-  - component: {fileID: 852831805}
   - component: {fileID: 852831807}
   - component: {fileID: 852831806}
   m_Layer: 0
@@ -42672,36 +42671,12 @@ MonoBehaviour:
   crewCount: 20
   resourceManager: {fileID: 852831800}
   mainCamera: {fileID: 609081460}
-  hullDamageSound: {fileID: 0}
-  audioSource: {fileID: 0}
+  hullDamageSound: {fileID: 8300000, guid: 5d2557ef716981e429b9ca1c62f36cf4, type: 3}
+  audioSource: {fileID: 852831799}
   hullSystemController: {fileID: 2087564741}
-  lightFlickerController: {fileID: 852831805}
+  lightFlickerController: {fileID: 2100602416}
   lifeSupportController: {fileID: 169482999}
   engineSystemController: {fileID: 714947095}
---- !u!114 &852831805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 852831798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efffac6829a45834aad136f6ee0fe622, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lights:
-  - {fileID: 867871483}
-  - {fileID: 484754197}
-  - {fileID: 637413153}
-  - {fileID: 440408303}
-  pointLight: {fileID: 1194776641}
-  maxFlickerDuration: 8
-  minFlickerOffTime: 0.05
-  maxFlickerOffTime: 1.5
-  minFlickerOnTime: 0.05
-  maxFlickerOnTime: 0.5
-  randomizeFlickerTiming: 1
 --- !u!82 &852831806
 AudioSource:
   m_ObjectHideFlags: 0
@@ -100601,6 +100576,8 @@ MonoBehaviour:
   minFlickerOnTime: 0.05
   maxFlickerOnTime: 0.5
   randomizeFlickerTiming: 1
+  minLightIntensity: 1
+  maxLightIntensity: 2.5
 --- !u!43 &2107735189
 Mesh:
   m_ObjectHideFlags: 0
