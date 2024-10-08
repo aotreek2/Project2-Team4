@@ -1,26 +1,28 @@
 using UnityEngine;
 using TMPro;
-using System.Collections;
 
 public class ResourceManager : MonoBehaviour
 {
     // Resource Variables
-    public float oxygenLevel = 100f;           // Oxygen Level (%)
-    public float fuelAmount = 100f;            // Fuel Amount (%)
+    public float oxygenLevel = 100f; // Oxygen Level (%)
+    public float fuelAmount = 100f;  // Fuel Amount (%)
     public float distanceToLighthouse = 1000f; // Distance in units
 
-    // Efficiency variables (controlled by ShipController)
-    public float engineEfficiency = 1f;      // Ranges from 0 to 1
-    public float lifeSupportEfficiency = 1f; // Ranges from 0 to 1
-    public float generatorEfficiency = 1f;   // Ranges from 0 to 1
+    // Efficiency variables (controlled by the different systems)
+    public float engineEfficiency = 1f; // Controlled by EngineSystemController (Ranges from 0 to 1)
+    public float lifeSupportEfficiency = 1f; // This will be updated from LifeSupportController
+    public float generatorEfficiency = 1f; // Controlled by ShipController (Ranges from 0 to 1)
+
+    // Fuel consumption variables
+    public float baseFuelConsumptionRate = 0.2f; // The base rate at which fuel depletes (this can be adjusted)
+    public float fuelDepletionMultiplier = 0.5f; // Adjusted multiplier to slow down the rate of fuel depletion
+
+    // Oxygen consumption variables
+    public float baseOxygenConsumptionRate = 1f; // Oxygen consumption rate when life support is fully damaged
+    public float oxygenRecoveryRate = 5f; // Oxygen recovery rate when life support is fully functional
 
     // Scrap Resource
     public float scrapAmount = 50f; // Starting amount of Scrap
-
-    // Audio Reosurces - Ahmed 
-
-    public AudioSource oxygenLowSFX, fuelLowSFX;
-    public AudioClip oxygenLowClip, fuelLowClip;
 
     // UI Elements
     public TextMeshProUGUI oxygenText;
@@ -29,8 +31,9 @@ public class ResourceManager : MonoBehaviour
     public TextMeshProUGUI scrapText;
     public TextMeshProUGUI moraleText;
 
-    // Reference to ShipController
+    // References to Controllers
     public ShipController shipController;
+    public LifeSupportController lifeSupportController;
 
     void Start()
     {
@@ -39,11 +42,27 @@ public class ResourceManager : MonoBehaviour
             shipController = FindObjectOfType<ShipController>();
         }
 
+        if (lifeSupportController == null)
+        {
+            lifeSupportController = FindObjectOfType<LifeSupportController>();
+        }
+
         UpdateResourceUI();
     }
 
     void Update()
     {
+        // Update efficiencies from controllers
+        if (shipController != null)
+        {
+            generatorEfficiency = shipController.generatorHealth / shipController.generatorMaxHealth;
+        }
+
+        if (lifeSupportController != null)
+        {
+            lifeSupportEfficiency = lifeSupportController.LifeSupportEfficiency;
+        }
+
         ConsumeResources();
         UpdateResourceUI();
         CheckGameOver();
@@ -51,33 +70,34 @@ public class ResourceManager : MonoBehaviour
 
     void ConsumeResources()
     {
-        // Check if life support or generator is damaged before consuming oxygen
-        if (shipController.generatorHealth < shipController.generatorMaxHealth || lifeSupportEfficiency < 1f)
+        // Oxygen management
+        if (lifeSupportEfficiency < 1f)
         {
-            float oxygenConsumptionRate = 1f / lifeSupportEfficiency;
-            oxygenLevel -= Time.deltaTime * oxygenConsumptionRate;
+            // Life support is damaged, oxygen level decreases
+            float oxygenConsumptionRate = (1f - lifeSupportEfficiency) * baseOxygenConsumptionRate;
+            oxygenLevel -= oxygenConsumptionRate * Time.deltaTime;
         }
-        else
+        else if (oxygenLevel < 100f)
         {
-            Debug.Log("Oxygen is not being consumed because life support and generator are fully functional.");
+            // Life support is fully functional, oxygen level increases back up
+            oxygenLevel += oxygenRecoveryRate * Time.deltaTime;
         }
 
-        // Fuel consumption remains as it is, based on engine efficiency
-        float fuelConsumptionRate = 0.5f / engineEfficiency;
+        // Clamp oxygenLevel between 0 and 100
+        oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f);
+
+        // Fuel consumption
+        float fuelConsumptionRate = baseFuelConsumptionRate / engineEfficiency * fuelDepletionMultiplier;
         fuelAmount -= Time.deltaTime * fuelConsumptionRate;
 
-        // Reduce distance based on engine efficiency
+        // Distance decreases based on engine efficiency
         float distanceReductionRate = 10f * engineEfficiency;
         distanceToLighthouse -= Time.deltaTime * distanceReductionRate;
 
-        // Clamp the values to prevent going out of bounds
-        oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f);
+        // Clamp values to avoid going out of bounds
         fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f);
         distanceToLighthouse = Mathf.Clamp(distanceToLighthouse, 0f, 1000f);
-
-        HandleIntercomUpdates();
     }
-
 
     public void UpdateResourceUI()
     {
@@ -93,27 +113,8 @@ public class ResourceManager : MonoBehaviour
         if (scrapText != null)
             scrapText.text = "Scrap: " + scrapAmount.ToString("F0");
 
-        if (moraleText != null)
+        if (moraleText != null && shipController != null)
             moraleText.text = "Crew Morale: " + shipController.crewMorale.ToString("F0") + "%";
-    }
-
-    void HandleIntercomUpdates()
-    {
-        if (oxygenLevel <= 50f)
-        {
-            if (!oxygenLowSFX.isPlaying)
-            {
-                oxygenLowSFX.PlayOneShot(oxygenLowClip);
-            }
-        }
-
-        if (fuelAmount <= 50f)
-        {
-            if (!fuelLowSFX.isPlaying)
-            {
-                fuelLowSFX.PlayOneShot(fuelLowClip);
-            }
-        }
     }
 
     void CheckGameOver()
@@ -134,15 +135,27 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
+    // Add scrap
+    public void AddScrap(float amount)
+    {
+        scrapAmount += amount;
+        scrapAmount = Mathf.Clamp(scrapAmount, 0f, 100f);
+        UpdateResourceUI();
+    }
+
+    // Add fuel
     public void AddFuel(float amount)
     {
         fuelAmount += amount;
         fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f);
+        UpdateResourceUI();
     }
 
+    // Add oxygen
     public void AddOxygen(float amount)
     {
         oxygenLevel += amount;
         oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f);
+        UpdateResourceUI();
     }
 }

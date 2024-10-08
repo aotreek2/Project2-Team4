@@ -31,6 +31,11 @@ public class CrewMember : MonoBehaviour
     private CubeInteraction currentCubeInteraction; // Reference to the cube (system part)
     private Vector3 systemDestination; // Destination of the system to repair
 
+    // Wandering variables
+    public float wanderRadius = 10f; // Radius within which the crew can wander
+    public float wanderTimer = 5f; // Time to wait before picking a new destination
+    private float wanderTimerCounter;
+
     void Start()
     {
         // Ensure the NavMeshAgent is assigned
@@ -43,35 +48,86 @@ public class CrewMember : MonoBehaviour
         // Find ShipController if not assigned
         shipController = FindObjectOfType<ShipController>();
         crewAnimator = GetComponent<Animator>();
-        //crewAnimator.SetFloat("Health", health); //Sets the health varaible to the death animation. (Ahmed added this)
+
+        // Initialize wander timer
+        wanderTimerCounter = wanderTimer;
     }
 
     void Update()
     {
-        if (!isPerformingTask && currentTask != Task.Idle)
-        {
-            HandleMovement();
-        }
-
-        // Increase fatigue over time if performing a task
         if (isPerformingTask)
         {
+            // Increase fatigue over time if performing a task
             IncreaseFatigue(Time.deltaTime * 5f); // Adjust rate as needed
+        }
+        else
+        {
+            // If not performing a task, handle wandering
+            if (currentTask == Task.Idle || currentTask == Task.Wander)
+            {
+                Wander();
+            }
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    void Wander()
     {
-        if (other.CompareTag("System"))  // Ensure your system cubes have the "System" tag
+        currentTask = Task.Wander;
+
+        wanderTimerCounter += Time.deltaTime;
+
+        if (wanderTimerCounter >= wanderTimer)
         {
-            EnterRepairZone();
+            Vector3 newDestination = RandomNavSphere(transform.position, wanderRadius, -1);
+
+            if (navAgent != null)
+            {
+                navAgent.SetDestination(newDestination);
+                navAgent.isStopped = false;
+                if (walkingSFX != null)
+                {
+                    walkingSFX.Play();
+                }
+            }
+
+            wanderTimerCounter = 0;
+        }
+
+        // Check if the crew member has reached the destination
+        if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
+        {
+            navAgent.isStopped = true;
+            navAgent.ResetPath();
+            if (walkingSFX != null)
+            {
+                walkingSFX.Stop();
+            }
+        }
+    }
+
+    public static Vector3 RandomNavSphere(Vector3 origin, float distance, int layermask)
+    {
+        Vector3 randomDirection = Random.insideUnitSphere * distance;
+        randomDirection += origin;
+
+        NavMeshHit navHit;
+        if (NavMesh.SamplePosition(randomDirection, out navHit, distance, layermask))
+        {
+            return navHit.position;
+        }
+        else
+        {
+            return origin;
         }
     }
 
     public void Select()
     {
         HighlightSelection(true); // Highlight the crew member when selected
-        selectedSFX.Play();
+        if (selectedSFX != null)
+        {
+            selectedSFX.Play();
+        }
         Debug.Log(crewName + " is selected.");
     }
 
@@ -99,26 +155,26 @@ public class CrewMember : MonoBehaviour
 
         if (navAgent != null)
         {
-            assignedSFX.Play();
+            if (assignedSFX != null)
+            {
+                assignedSFX.Play();
+            }
             navAgent.isStopped = false; // Ensure the agent is not stopped
             navAgent.SetDestination(destination); // Move to the destination
-            walkingSFX.Play();
+            if (walkingSFX != null)
+            {
+                walkingSFX.Play();
+            }
         }
 
         Deselect(); // Deselect the crew member to allow movement
     }
 
-    void HandleMovement()
+    void OnTriggerEnter(Collider other)
     {
-        if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
+        if (other.CompareTag("System"))  // Ensure your system cubes have the "System" tag
         {
-            Debug.Log($"{crewName} has arrived at destination.");
-            navAgent.isStopped = true;
-            navAgent.ResetPath();
-            navAgent.velocity = Vector3.zero; // Ensure agent stops moving
-
-            // Ensure the transform doesn't drift
-            transform.position = navAgent.transform.position;
+            EnterRepairZone();
         }
     }
 
@@ -131,7 +187,10 @@ public class CrewMember : MonoBehaviour
     void PerformTask()
     {
         isPerformingTask = true;
-        walkingSFX.Stop();
+        if (walkingSFX != null)
+        {
+            walkingSFX.Stop();
+        }
         // Adjust task efficiency based on morale and fatigue
         float actualEfficiency = taskEfficiency * (morale / 100f) * ((100f - fatigue) / 100f);
         currentCubeInteraction.StartRepair(this, actualEfficiency);

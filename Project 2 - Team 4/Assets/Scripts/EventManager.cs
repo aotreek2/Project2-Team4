@@ -9,9 +9,10 @@ public class EventManager : MonoBehaviour
     public EngineSystemController engineSystemController; // Reference to the new EngineSystemController
     public DecisionPanelManager decisionManager;
 
-    //Audio (Ahmed)
+    // Audio (Ahmed)
     public AudioSource eventAudio;
     public AudioClip asteroidHit;
+
     void Start()
     {
         // Assign the ShipController if not set
@@ -181,8 +182,12 @@ public class EventManager : MonoBehaviour
     // Coroutine for Asteroid Event (Uses HullSystemController)
     private IEnumerator HandleAsteroidEvent()
     {
-        hullSystemController.DamageHull(30f); // Call HullSystemController for hull damage
-        Debug.Log("Event: Asteroid collision! Hull integrity reduced.");
+        if (hullSystemController != null)
+        {
+            // Start damage over time to the hull
+            hullSystemController.StartDamageOverTime(5f); // Damage rate per second
+            Debug.Log("Event: Asteroid collision! Hull is taking damage over time.");
+        }
 
         // Wait for effects to finish
         yield return new WaitForSeconds(1.0f);
@@ -190,9 +195,9 @@ public class EventManager : MonoBehaviour
         if (decisionManager != null)
         {
             decisionManager.OpenDecisionPanel(
-                "An asteroid collision has occurred. What will you do?",
-                "Option 1: Sacrifice 10 crew to repair the hull.",
-                "Option 2: Reduce hull integrity by 50% but save the crew.",
+                "An asteroid collision has occurred. The hull is taking damage over time. What will you do?",
+                "Option 1: Sacrifice 10 crew to repair the hull immediately.",
+                "Option 2: Let the hull continue to take damage.",
                 shipController
             );
         }
