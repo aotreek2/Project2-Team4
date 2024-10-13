@@ -13,6 +13,10 @@ public class EventManager : MonoBehaviour
     public AudioSource eventAudio;
     public AudioClip asteroidHit;
 
+    public Animator[] asteroidEventAnim;
+    public Animator derelictShipAnim;
+
+
     void Start()
     {
         // Assign the ShipController if not set
@@ -62,6 +66,7 @@ public class EventManager : MonoBehaviour
         {
             Debug.Log("Hotkey 1 pressed: Triggering Fire Event");
             StartCoroutine(HandleFireEvent());
+
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
@@ -112,6 +117,7 @@ public class EventManager : MonoBehaviour
             case 1:
                 // Asteroid collision damages hull
                 StartCoroutine(HandleAsteroidEvent());
+
                 if (!eventAudio.isPlaying)
                 {
                     eventAudio.PlayOneShot(asteroidHit);
@@ -189,6 +195,9 @@ public class EventManager : MonoBehaviour
             Debug.Log("Event: Asteroid collision! Hull is taking damage over time.");
         }
 
+        int asteroidSpawn = Random.Range(0, asteroidEventAnim.Length);
+        asteroidEventAnim[asteroidSpawn].SetTrigger("DoEvent");
+
         // Wait for effects to finish
         yield return new WaitForSeconds(1.0f);
 
@@ -242,6 +251,7 @@ public class EventManager : MonoBehaviour
             );
         }
 
+        derelictShipAnim.SetTrigger("DoEvent");
         yield return null;
     }
 }
