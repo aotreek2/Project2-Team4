@@ -26,6 +26,7 @@ public class SystemPanelManager : MonoBehaviour
     // References
     private ShipController shipController;
     private CubeInteraction.SystemType currentSystemType;
+    private ChapterManager chapterManager;
 
     void Start()
     {
@@ -34,6 +35,7 @@ public class SystemPanelManager : MonoBehaviour
         {
             Debug.LogError("UI components not assigned! Check the Inspector.");
             return;
+            chapterManager = FindObjectOfType<ChapterManager>();
         }
 
         // Assign button listeners
@@ -82,6 +84,11 @@ public class SystemPanelManager : MonoBehaviour
                 systemNameText.text = "Unknown System";
                 systemDescriptionText.text = "No description available.";
                 break;
+
+                  if (chapterManager.currentChapter == ChapterManager.Chapter.Chapter1)
+                  {
+                    
+                  }
         }
 
         // Play the open sound

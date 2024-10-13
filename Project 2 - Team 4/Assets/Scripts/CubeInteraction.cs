@@ -15,6 +15,9 @@ public class CubeInteraction : MonoBehaviour
 
     private bool isRepairing = false;
 
+    // **Added ChapterManager Reference**
+    private ChapterManager chapterManager;
+
     void Start()
     {
         if (systemPanelManager == null)
@@ -26,6 +29,9 @@ public class CubeInteraction : MonoBehaviour
         {
             defaultColor = cubeRenderer.material.color;
         }
+
+        // Initialize ChapterManager
+        chapterManager = FindObjectOfType<ChapterManager>();
     }
 
     public void SetSelectedCrewMember(CrewMember crewMember)
@@ -53,6 +59,7 @@ public class CubeInteraction : MonoBehaviour
         }
     }
 
+    // **Add the StartRepair method back into the script**
     public void StartRepair(CrewMember crewMember, float efficiency)
     {
         if (!isRepairing)
@@ -115,5 +122,4 @@ public class CubeInteraction : MonoBehaviour
 
         systemPanelManager.UpdateRepairProgress(0f);
     }
-
 }

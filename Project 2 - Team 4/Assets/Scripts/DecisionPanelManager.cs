@@ -22,6 +22,11 @@ public class DecisionPanelManager : MonoBehaviour
     private EngineSystemController engineSystemController; // Reference to EngineSystemController
     private string currentEvent;
 
+    // **Added Variables for Chapter System**
+    private bool decisionMade = false;
+    public bool IsDecisionMade => decisionMade;
+    private ChapterManager chapterManager;
+
     void Start()
     {
         // Ensure the panel is inactive and hidden at the start
@@ -58,11 +63,15 @@ public class DecisionPanelManager : MonoBehaviour
         {
             engineSystemController = FindObjectOfType<EngineSystemController>();
         }
+
+        // **Initialize ChapterManager**
+        chapterManager = FindObjectOfType<ChapterManager>();
     }
 
     // Method to open the decision panel with options and fade-in effect
     public void OpenDecisionPanel(string eventDescription, string option1, string option2, ShipController controller)
     {
+        decisionMade = false; // Reset decision flag
         shipController = controller;
         currentEvent = eventDescription.ToLower(); // Convert to lower case for easier comparison
 
@@ -93,47 +102,27 @@ public class DecisionPanelManager : MonoBehaviour
     // Handles option 1 being selected
     private void OnOption1Selected()
     {
-        if (currentEvent.Contains("fire"))
+        decisionMade = true;
+
+        switch (chapterManager.currentChapter)
         {
-            shipController.SacrificeCrew(5);
-            lifeSupportController.RepairLifeSupport(30f);
-            Debug.Log("Option 1: Sacrificed 5 crew to repair Life Support.");
-        }
-        else if (currentEvent.Contains("asteroid"))
-        {
-            shipController.SacrificeCrew(10);
-            hullSystemController.RepairHull(50f);
-            Debug.Log("Option 1: Sacrificed 10 crew to repair the hull.");
-        }
-        else if (currentEvent.Contains("derelict"))
-        {
-            int outcome = Random.Range(0, 2); // Random success or failure outcome
-            if (outcome == 0)
-            {
-                shipController.resourceManager.scrapAmount += 50;
-                shipController.AddCrew(2);
-                shipController.AdjustCrewMorale(10f);
-                Debug.Log("You found valuable resources and rescued 2 crew members! Morale increased.");
-            }
-            else
-            {
-                hullSystemController.DamageHull(30f);
+            case ChapterManager.Chapter.Chapter2:
+                // Handle Chapter 2, Option 1
                 shipController.SacrificeCrew(5);
-                shipController.AdjustCrewMorale(-20f);
-                Debug.Log("Pirates ambushed you. Lost 5 crew and hull integrity reduced. Morale decreased.");
-            }
-        }
-        else if (currentEvent.Contains("system failure"))
-        {
-            shipController.SacrificeCrew(10);
-            engineSystemController.RepairEngine(50f); // Updated to use EngineSystemController
-            Debug.Log("Option 1: Sacrificed 10 crew to repair the engines.");
-        }
-        else if (currentEvent.Contains("generator"))
-        {
-            shipController.SacrificeCrew(10);
-            shipController.RepairGenerator(50f);
-            Debug.Log("Option 1: Sacrificed 10 crew to repair the generator.");
+                hullSystemController.RepairHull(20f);
+                Debug.Log("Diverted power to shields. Sacrificed 5 crew.");
+                break;
+            case ChapterManager.Chapter.Chapter3:
+                // Handle Chapter 3, Option 1
+                shipController.resourceManager.fuelAmount -= 20f;
+                engineSystemController.RepairEngine(20f);
+                Debug.Log("Boosted engines. Used extra fuel.");
+                break;
+            case ChapterManager.Chapter.Chapter4:
+                // Handle Chapter 4, Option 1 (End game)
+                Debug.Log("Docked safely. Game ends.");
+                // Implement end-game logic
+                break;
         }
 
         shipController.resourceManager.UpdateResourceUI();
@@ -142,34 +131,25 @@ public class DecisionPanelManager : MonoBehaviour
 
     private void OnOption2Selected()
     {
-        if (currentEvent.Contains("fire"))
+        decisionMade = true;
+
+        switch (chapterManager.currentChapter)
         {
-            lifeSupportController.ReduceLifeSupportEfficiency(50f);
-            shipController.AdjustCrewMorale(-5f);
-            Debug.Log("Option 2: Reduced Life Support efficiency by 50% to save crew.");
-        }
-        else if (currentEvent.Contains("asteroid"))
-        {
-            hullSystemController.ReduceHullIntegrity(50f);
-            shipController.AdjustCrewMorale(-10f);
-            Debug.Log("Option 2: Reduced hull integrity by 50% to save crew.");
-        }
-        else if (currentEvent.Contains("derelict"))
-        {
-            shipController.resourceManager.fuelAmount -= 10f;
-            shipController.AdjustCrewMorale(0f); // No change
-            Debug.Log("You decide to play it safe and move on.");
-        }
-        else if (currentEvent.Contains("system failure"))
-        {
-            engineSystemController.ReduceEngineEfficiency(50f); // Updated to use EngineSystemController
-            shipController.AdjustCrewMorale(-10f);
-            Debug.Log("Option 2: Reduced engine efficiency by 50% to save crew.");
-        }
-        else if (currentEvent.Contains("generator"))
-        {
-            shipController.AdjustCrewMorale(-15f);
-            Debug.Log("Option 2: Accepted reduced efficiency for other systems to save crew.");
+            case ChapterManager.Chapter.Chapter2:
+                // Handle Chapter 2, Option 2
+                hullSystemController.ReduceHullIntegrity(50f);
+                Debug.Log("Navigated carefully. Hull damaged.");
+                break;
+            case ChapterManager.Chapter.Chapter3:
+                // Handle Chapter 3, Option 2
+                engineSystemController.DamageEngine(30f);
+                Debug.Log("Rode gravitational pull. Engine damaged.");
+                break;
+            case ChapterManager.Chapter.Chapter4:
+                // Handle Chapter 4, Option 2 (Start new journey)
+                Debug.Log("Broadcasted message and left. New journey begins.");
+                // Implement new journey logic
+                break;
         }
 
         shipController.resourceManager.UpdateResourceUI();

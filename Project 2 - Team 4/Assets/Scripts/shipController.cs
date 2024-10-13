@@ -20,7 +20,7 @@ public class ShipController : MonoBehaviour
     public HullSystemController hullSystemController;
     public LightFlickerController lightFlickerController;
     public LifeSupportController lifeSupportController;
-    public EngineSystemController engineSystemController; // Add Engine System Controller
+    public EngineSystemController engineSystemController;
 
     void Start()
     {
@@ -63,6 +63,16 @@ public class ShipController : MonoBehaviour
             else
             {
                 lightFlickerController.Initialize(generatorMaxHealth);
+            }
+        }
+
+        // Initialize the LifeSupportController
+        if (lifeSupportController == null)
+        {
+            lifeSupportController = FindObjectOfType<LifeSupportController>();
+            if (lifeSupportController == null)
+            {
+                Debug.LogError("LifeSupportController not found. Ensure it's properly set in the scene.");
             }
         }
 
@@ -111,7 +121,7 @@ public class ShipController : MonoBehaviour
     {
         if (engineSystemController != null)
         {
-            UpdateCubeColor(engineSystemController.enginesCube, engineSystemController.engineHealth / engineSystemController.engineMaxHealth);
+            engineSystemController.UpdateEngineCubeColor();
         }
 
         UpdateCubeColor(generatorCube, generatorHealth / generatorMaxHealth);
@@ -299,6 +309,22 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    
+    // **Added Methods for Chapter System**
 
+    public void DamageShipAtStart()
+    {
+        // Damage critical systems at the start of the game
+        lifeSupportController.DamageLifeSupport(50f);
+        engineSystemController.DamageEngine(50f);
+        hullSystemController.DamageHull(50f);
+        Debug.Log("Critical systems have been damaged at the start.");
+    }
+
+    public bool AreCriticalSystemsRepaired()
+    {
+        // Check if critical systems have been repaired above a threshold
+        return lifeSupportController.lifeSupportHealth >= 80f &&
+               engineSystemController.engineHealth >= 80f &&
+               hullSystemController.hullHealth >= 80f;
+    }
 }
