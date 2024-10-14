@@ -43,15 +43,11 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator ChapterOne()
     {
         currentChapter = Chapter.Chapter1;
-        Debug.Log("Chapter One started.");
 
-        // Cinematic display of Chapter 1 title and subtext with fog
-        chapterIntroUI.DisplayChapterIntro("CHAPTER 1", "Repair Critical Systems");
+        // Display Chapter 1 title and subtext with cinematic intro
+        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 1", "Repair Critical Systems"));
 
-        // Wait for a few seconds for the intro to finish
-        yield return new WaitForSeconds(chapterIntroUI.fadeDuration + chapterIntroUI.displayDuration);
-
-        // Show additional guidance dialogue
+        // Show additional guidance dialogue after Chapter UI is done
         string[] dialogueLines = new string[]
         {
             "Alert! Critical systems are damaged.",
@@ -59,6 +55,8 @@ public class ChapterManager : MonoBehaviour
             "Select a crew member and assign them to a system to begin repairs."
         };
         dialogueManager.StartDialogue(dialogueLines);
+
+        // Wait for the dialogue to finish
         yield return new WaitUntil(() => !dialogueManager.isDialogueActive);
 
         // Highlight critical systems to be repaired
@@ -81,15 +79,11 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator ChapterTwo()
     {
         currentChapter = Chapter.Chapter2;
-        Debug.Log("Chapter Two started.");
 
-        // Cinematic display of Chapter 2 title and subtext with fog
-        chapterIntroUI.DisplayChapterIntro("CHAPTER 2", "Asteroid Field Ahead");
+        // Display Chapter 2 intro with cinematic text
+        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 2", "Asteroid Field Ahead"));
 
-        // Wait for a few seconds for the intro to finish
-        yield return new WaitForSeconds(chapterIntroUI.fadeDuration + chapterIntroUI.displayDuration);
-
-        // Trigger asteroid event decision
+        // Trigger asteroid event decision after intro
         decisionPanelManager.OpenDecisionPanel(
             "An asteroid field is ahead! How do you proceed?",
             "Divert power to shields (Sacrifice 5 crew)",
@@ -107,15 +101,11 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator ChapterThree()
     {
         currentChapter = Chapter.Chapter3;
-        Debug.Log("Chapter Three started.");
 
-        // Cinematic display of Chapter 3 title and subtext with fog
-        chapterIntroUI.DisplayChapterIntro("CHAPTER 3", "Black Hole Event");
+        // Display Chapter 3 intro with cinematic text
+        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 3", "Black Hole Event"));
 
-        // Wait for a few seconds for the intro to finish
-        yield return new WaitForSeconds(chapterIntroUI.fadeDuration + chapterIntroUI.displayDuration);
-
-        // Trigger black hole event decision
+        // Trigger black hole event decision after intro
         decisionPanelManager.OpenDecisionPanel(
             "A black hole is pulling the ship! What's your choice?",
             "Boost engines to escape (Use extra fuel)",
@@ -133,15 +123,11 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator ChapterFour()
     {
         currentChapter = Chapter.Chapter4;
-        Debug.Log("Chapter Four started.");
 
-        // Cinematic display of Chapter 4 title and subtext with fog
-        chapterIntroUI.DisplayChapterIntro("CHAPTER 4", "Reaching the Lighthouse");
+        // Display Chapter 4 intro with cinematic text
+        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 4", "Reaching the Lighthouse"));
 
-        // Wait for a few seconds for the intro to finish
-        yield return new WaitForSeconds(chapterIntroUI.fadeDuration + chapterIntroUI.displayDuration);
-
-        // Trigger the final event decision
+        // Trigger the final event decision after intro
         decisionPanelManager.OpenDecisionPanel(
             "You've reached the Lighthouse! Final decision?",
             "Dock safely (End the game)",
@@ -153,6 +139,5 @@ public class ChapterManager : MonoBehaviour
         yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
 
         // End the game or start a new journey based on the decision
-        Debug.Log("Game Over. Thank you for playing!");
     }
 }
