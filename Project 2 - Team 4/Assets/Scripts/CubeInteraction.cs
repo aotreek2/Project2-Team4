@@ -101,6 +101,8 @@ public class CubeInteraction : MonoBehaviour
         ChangeSystemColor(defaultColor);
         Debug.Log("Repair completed on system: " + systemType);
 
+         TriggerRepairDialogue();
+
         switch (systemType)
         {
             case SystemType.LifeSupport:
@@ -122,4 +124,32 @@ public class CubeInteraction : MonoBehaviour
 
         systemPanelManager.UpdateRepairProgress(0f);
     }
+
+    private void TriggerRepairDialogue()
+    {
+        DialogueManager dialogueManager = FindObjectOfType<DialogueManager>();
+        if (dialogueManager != null)
+        {
+            string[] dialogueLines = new string[]
+            {
+                $"{systemType} has been successfully repaired!",
+                "Good job! Keep it up."
+            };
+            dialogueManager.StartDialogue(dialogueLines);
+        }
+    }
+
+    public void SetPulsingEffect(bool isActive)
+    {
+        PulsingEffect pulsingEffect = GetComponent<PulsingEffect>();
+        if (pulsingEffect == null && isActive)
+        {
+            pulsingEffect = gameObject.AddComponent<PulsingEffect>();
+        }
+        else if (pulsingEffect != null && !isActive)
+        {
+            Destroy(pulsingEffect);
+        }
+    }
+
 }

@@ -46,6 +46,19 @@ public class EngineSystemController : MonoBehaviour
         {
             UpdateFire();
         }
+
+        // Example of checking life support health and enabling pulse
+        // You will need to remove this if it's not related to EngineSystemController
+        /*
+        if (lifeSupportHealth < lifeSupportMaxHealth * 0.8f)
+        {
+            cubeInteraction.SetPulsingEffect(true);
+        }
+        else
+        {
+            cubeInteraction.SetPulsingEffect(false);
+        }
+        */
     }
 
     // Update the engine efficiency based on current health
@@ -88,7 +101,7 @@ public class EngineSystemController : MonoBehaviour
     }
 
     // Method to start engine fire
-    private void StartEngineFire()
+    void StartEngineFire()
     {
         if (engineFireParticles != null)
         {
@@ -101,7 +114,7 @@ public class EngineSystemController : MonoBehaviour
     }
 
     // Method to stop engine fire
-    private void StopEngineFire()
+    void StopEngineFire()
     {
         if (engineFireParticles != null)
         {
@@ -153,11 +166,10 @@ public class EngineSystemController : MonoBehaviour
             {
                 TrySpreadFire(hullController);
             }
-            // Add more conditions here for other types of systems if needed.
         }
     }
 
-    private void TrySpreadFire(MonoBehaviour system)
+    void TrySpreadFire(MonoBehaviour system)
     {
         // Roll for fire spread chance
         if (Random.value < fireSpreadChance)

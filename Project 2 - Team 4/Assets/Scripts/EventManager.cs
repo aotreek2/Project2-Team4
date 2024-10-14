@@ -4,10 +4,11 @@ using System.Collections;
 public class EventManager : MonoBehaviour
 {
     public ShipController shipController;
-    public LifeSupportController lifeSupportController; // Reference to the new LifeSupportController
-    public HullSystemController hullSystemController;  // Reference to the new HullSystemController
-    public EngineSystemController engineSystemController; // Reference to the new EngineSystemController
+    public LifeSupportController lifeSupportController;
+    public HullSystemController hullSystemController;
+    public EngineSystemController engineSystemController;
     public DecisionPanelManager decisionManager;
+    public ChapterManager chapterManager; // Reference to ChapterManager
 
     // Audio (Ahmed)
     public AudioSource eventAudio;
@@ -16,57 +17,32 @@ public class EventManager : MonoBehaviour
     public Animator[] asteroidEventAnim;
     public Animator derelictShipAnim;
 
-
     void Start()
     {
-        // Assign the ShipController if not set
-        if (shipController == null)
-        {
-            shipController = FindObjectOfType<ShipController>();
-        }
+        // Assign the necessary controllers and managers
+        shipController = shipController ?? FindObjectOfType<ShipController>();
+        lifeSupportController = lifeSupportController ?? FindObjectOfType<LifeSupportController>();
+        hullSystemController = hullSystemController ?? FindObjectOfType<HullSystemController>();
+        engineSystemController = engineSystemController ?? FindObjectOfType<EngineSystemController>();
+        decisionManager = decisionManager ?? FindObjectOfType<DecisionPanelManager>();
+        chapterManager = chapterManager ?? FindObjectOfType<ChapterManager>();
 
-        // Assign the LifeSupportController if not set
-        if (lifeSupportController == null)
-        {
-            lifeSupportController = FindObjectOfType<LifeSupportController>();
-        }
-
-        // Assign the HullSystemController if not set
-        if (hullSystemController == null)
-        {
-            hullSystemController = FindObjectOfType<HullSystemController>();
-        }
-
-        // Assign the EngineSystemController if not set
-        if (engineSystemController == null)
-        {
-            engineSystemController = FindObjectOfType<EngineSystemController>();
-        }
-
-        // Assign the DecisionManager if not set
-        if (decisionManager == null)
-        {
-            decisionManager = FindObjectOfType<DecisionPanelManager>();
-        }
-
-        // Start event coroutine for random events
-        StartCoroutine(RandomEvents());
+        // Start event coroutine for random events after Chapter One
+        StartCoroutine(ManageChapterEvents());
     }
 
     void Update()
     {
-        // Check for hotkeys and trigger specific events
-        HandleHotkeys();
+        HandleHotkeys(); // Check for hotkeys to manually trigger events for testing
     }
 
-    // Method to detect hotkeys
+    // Handle hotkeys for testing events manually
     private void HandleHotkeys()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log("Hotkey 1 pressed: Triggering Fire Event");
             StartCoroutine(HandleFireEvent());
-
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
@@ -90,19 +66,34 @@ public class EventManager : MonoBehaviour
         }
     }
 
+    // Manages random events based on the current chapter
+    private IEnumerator ManageChapterEvents()
+    {
+        // Wait for Chapter One to be completed before starting random events
+        yield return new WaitUntil(() => chapterManager.currentChapter != ChapterManager.Chapter.Chapter1);
+
+        // Start random events after Chapter One
+        StartCoroutine(RandomEvents());
+    }
+
+    // Coroutine for random event generation, only after Chapter One
     IEnumerator RandomEvents()
     {
         while (true)
         {
-            // Wait for a random interval between events
             float waitTime = Random.Range(10f, 20f);
             yield return new WaitForSeconds(waitTime);
 
-            // Trigger a random event
-            TriggerRandomEvent();
+            if (chapterManager.currentChapter == ChapterManager.Chapter.Chapter2 || 
+                chapterManager.currentChapter == ChapterManager.Chapter.Chapter3 || 
+                chapterManager.currentChapter == ChapterManager.Chapter.Chapter4)
+            {
+                TriggerRandomEvent();
+            }
         }
     }
 
+    // Method to trigger random events
     void TriggerRandomEvent()
     {
         int eventType = Random.Range(0, 5); // 0: Fire, 1: Asteroid, 2: System Failure, 3: Derelict, 4: Generator Failure
@@ -110,148 +101,108 @@ public class EventManager : MonoBehaviour
         switch (eventType)
         {
             case 0:
-                // Fire outbreak damages life support
                 StartCoroutine(HandleFireEvent());
                 break;
-
             case 1:
-                // Asteroid collision damages hull
                 StartCoroutine(HandleAsteroidEvent());
-
                 if (!eventAudio.isPlaying)
                 {
                     eventAudio.PlayOneShot(asteroidHit);
                 }
                 break;
-
             case 2:
-                // System failure damages engines
                 StartCoroutine(HandleSystemFailureEvent());
                 break;
-
             case 3:
-                // Derelict ship encounter
                 StartCoroutine(HandleDerelictEvent());
                 break;
-
             case 4:
-                // Generator failure event
                 StartCoroutine(HandleGeneratorFailureEvent());
                 break;
         }
     }
 
-    // Coroutine for Fire Event
+    // Fire Event coroutine
     private IEnumerator HandleFireEvent()
     {
-        if (lifeSupportController != null)
-        {
-            lifeSupportController.DamageLifeSupport(20f); // Damage life support using new controller
-            Debug.Log("Event: Fire outbreak! Life Support damaged.");
-        }
+        lifeSupportController?.DamageLifeSupport(20f);
+        Debug.Log("Event: Fire outbreak! Life Support damaged.");
 
-        // Wait for effects to finish (adjust duration as needed)
         yield return new WaitForSeconds(1.0f);
 
-        // Open the decision panel
-        if (decisionManager != null)
-        {
-            decisionManager.OpenDecisionPanel(
-                "A fire has damaged the Life Support system. What will you do?",
-                "Option 1: Sacrifice 5 crew to repair Life Support.",
-                "Option 2: Save crew but reduce Life Support efficiency by 50%.",
-                shipController
-            );
-        }
+        decisionManager?.OpenDecisionPanel(
+            "A fire has damaged the Life Support system. What will you do?",
+            "Option 1: Sacrifice 5 crew to repair Life Support.",
+            "Option 2: Save crew but reduce Life Support efficiency by 50%.",
+            shipController
+        );
     }
 
-    // Coroutine for Generator Failure Event
+    // Generator Failure Event coroutine
     private IEnumerator HandleGeneratorFailureEvent()
     {
-        shipController.DamageGenerator(30f); // Example damage value
+        shipController.DamageGenerator(30f);
         Debug.Log("Event: Generator failure! Generator health reduced.");
 
-        // Wait for effects to finish (adjust duration as needed)
         yield return new WaitForSeconds(1.0f);
 
-        if (decisionManager != null)
-        {
-            decisionManager.OpenDecisionPanel(
-                "The generator has failed! What will you do?",
-                "Option 1: Sacrifice 10 crew to repair the generator.",
-                "Option 2: Accept reduced efficiency for other systems.",
-                shipController
-            );
-        }
+        decisionManager?.OpenDecisionPanel(
+            "The generator has failed! What will you do?",
+            "Option 1: Sacrifice 10 crew to repair the generator.",
+            "Option 2: Accept reduced efficiency for other systems.",
+            shipController
+        );
     }
 
-    // Coroutine for Asteroid Event (Uses HullSystemController)
+    // Asteroid Event coroutine
     private IEnumerator HandleAsteroidEvent()
     {
-        if (hullSystemController != null)
-        {
-            // Start damage over time to the hull
-            hullSystemController.StartDamageOverTime(5f); // Damage rate per second
-            Debug.Log("Event: Asteroid collision! Hull is taking damage over time.");
-        }
+        hullSystemController?.StartDamageOverTime(5f);
+        Debug.Log("Event: Asteroid collision! Hull is taking damage over time.");
 
         int asteroidSpawn = Random.Range(0, asteroidEventAnim.Length);
         asteroidEventAnim[asteroidSpawn].SetTrigger("DoEvent");
 
-        // Wait for effects to finish
         yield return new WaitForSeconds(1.0f);
 
-        if (decisionManager != null)
-        {
-            decisionManager.OpenDecisionPanel(
-                "An asteroid collision has occurred. The hull is taking damage over time. What will you do?",
-                "Option 1: Sacrifice 10 crew to repair the hull immediately.",
-                "Option 2: Let the hull continue to take damage.",
-                shipController
-            );
-        }
+        decisionManager?.OpenDecisionPanel(
+            "An asteroid collision has occurred. The hull is taking damage over time. What will you do?",
+            "Option 1: Sacrifice 10 crew to repair the hull immediately.",
+            "Option 2: Let the hull continue to take damage.",
+            shipController
+        );
     }
 
-    // Coroutine for System Failure Event (Uses EngineSystemController)
+    // System Failure Event coroutine
     private IEnumerator HandleSystemFailureEvent()
     {
-        if (engineSystemController != null)
-        {
-            engineSystemController.DamageEngine(25f); // Call EngineSystemController for engine damage
-            Debug.Log("Event: System failure! Engines damaged.");
-        }
+        engineSystemController?.DamageEngine(25f);
+        Debug.Log("Event: System failure! Engines damaged.");
 
-        // Wait for effects to finish
         yield return new WaitForSeconds(1.0f);
 
-        if (decisionManager != null)
-        {
-            decisionManager.OpenDecisionPanel(
-                "A system failure has damaged the Engines. What will you do?",
-                "Option 1: Sacrifice 10 crew to repair the engines.",
-                "Option 2: Reduce engine efficiency by 50% to save the crew.",
-                shipController
-            );
-        }
+        decisionManager?.OpenDecisionPanel(
+            "A system failure has damaged the Engines. What will you do?",
+            "Option 1: Sacrifice 10 crew to repair the engines.",
+            "Option 2: Reduce engine efficiency by 50% to save the crew.",
+            shipController
+        );
     }
 
-    // Coroutine for Derelict Event
+    // Derelict Event coroutine
     private IEnumerator HandleDerelictEvent()
     {
         Debug.Log("Event: Derelict ship encountered!");
 
-        // No damage effects, so no need to wait
-        if (decisionManager != null)
-        {
-            decisionManager.OpenDecisionPanel(
-                "You encounter a derelict ship. Do you want to explore it?",
-                "Option 1: Explore the ship for potential resources.",
-                "Option 2: Ignore it and continue your journey.",
-                shipController
-            );
-        }
-
         derelictShipAnim.SetTrigger("DoEvent");
+
+        decisionManager?.OpenDecisionPanel(
+            "You encounter a derelict ship. Do you want to explore it?",
+            "Option 1: Explore the ship for potential resources.",
+            "Option 2: Ignore it and continue your journey.",
+            shipController
+        );
+
         yield return null;
     }
 }

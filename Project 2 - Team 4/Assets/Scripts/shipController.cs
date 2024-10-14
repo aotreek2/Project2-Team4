@@ -322,9 +322,9 @@ public class ShipController : MonoBehaviour
 
     public bool AreCriticalSystemsRepaired()
     {
-        // Check if critical systems have been repaired above a threshold
-        return lifeSupportController.lifeSupportHealth >= 80f &&
-               engineSystemController.engineHealth >= 80f &&
-               hullSystemController.hullHealth >= 80f;
+        return lifeSupportController.lifeSupportHealth == lifeSupportController.lifeSupportMaxHealth &&
+            engineSystemController.engineHealth == engineSystemController.engineMaxHealth &&
+            hullSystemController.hullHealth == hullSystemController.hullMaxHealth;
     }
+
 }
