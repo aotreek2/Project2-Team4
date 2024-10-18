@@ -12,6 +12,11 @@ public class ChapterManager : MonoBehaviour
     public SystemHighlighter systemHighlighter; // Reference to a system highlighting manager
     public ChapterIntroUI chapterIntroUI; // Reference to ChapterIntroUI for cinematic intro
 
+    // Damage levels for starting state
+    public float initialLifeSupportDamage = 50f; // Life Support starts at 50% health
+    public float initialEngineDamage = 60f; // Engine starts at 60% health
+    public float initialHullDamage = 70f; // Hull starts at 70% health
+
     void Start()
     {
         if (shipController == null)
@@ -35,6 +40,7 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator StartChapterSequence()
     {
         yield return StartCoroutine(ChapterOne());
+        yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
         yield return StartCoroutine(ChapterTwo());
         yield return StartCoroutine(ChapterThree());
         yield return StartCoroutine(ChapterFour());
@@ -43,6 +49,9 @@ public class ChapterManager : MonoBehaviour
     private IEnumerator ChapterOne()
     {
         currentChapter = Chapter.Chapter1;
+
+        // Damage the ship systems at the start of Chapter 1
+        ApplyInitialDamageToSystems();
 
         // Display Chapter 1 title and subtext with cinematic intro
         yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 1", "Repair Critical Systems"));
@@ -63,17 +72,29 @@ public class ChapterManager : MonoBehaviour
         systemHighlighter.HighlightSystem(shipController.lifeSupportController.gameObject);
         systemHighlighter.HighlightSystem(shipController.engineSystemController.gameObject);
         systemHighlighter.HighlightSystem(shipController.hullSystemController.gameObject);
+    }
 
-        // Wait for player to repair critical systems
-        yield return new WaitUntil(() => shipController.AreCriticalSystemsRepaired());
+    // Apply initial damage to the systems to simulate a damaged state
+    private void ApplyInitialDamageToSystems()
+    {
+        shipController.lifeSupportController.DamageLifeSupport(initialLifeSupportDamage);
+        shipController.engineSystemController.DamageEngine(initialEngineDamage);
+        shipController.hullSystemController.DamageHull(initialHullDamage);
+    }
+
+    private IEnumerator WaitUntilSystemsFullyRepaired()
+    {
+        // Wait for all critical systems to be repaired to 100%
+        yield return new WaitUntil(() =>
+            shipController.lifeSupportController.lifeSupportHealth >= shipController.lifeSupportController.lifeSupportMaxHealth &&
+            shipController.engineSystemController.engineHealth >= shipController.engineSystemController.engineMaxHealth &&
+            shipController.hullSystemController.hullHealth >= shipController.hullSystemController.hullMaxHealth
+        );
 
         // Stop highlighting once systems are repaired
         systemHighlighter.StopHighlighting(shipController.lifeSupportController.gameObject);
         systemHighlighter.StopHighlighting(shipController.engineSystemController.gameObject);
         systemHighlighter.StopHighlighting(shipController.hullSystemController.gameObject);
-
-        // Proceed to the next chapter after a short delay
-        yield return new WaitForSeconds(2f);
     }
 
     private IEnumerator ChapterTwo()

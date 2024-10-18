@@ -1,47 +1,101 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class SystemHighlighter : MonoBehaviour
 {
-    public Material highlightMaterial; // The material for pulsing effect
-    private Material defaultMaterial;  // The system's original material
-    private Renderer systemRenderer;   // Reference to the Renderer component
+    public Color outlineColor = Color.yellow; // The color for the outline effect
+    public float outlineWidth = 0.005f;       // The width of the outline effect
+    private Dictionary<Renderer, MaterialPropertyBlock> originalProperties = new Dictionary<Renderer, MaterialPropertyBlock>();
 
-    void Start()
+    private GameObject currentHighlightedObject = null;
+
+    void Update()
     {
-        // Get the Renderer component from the system object
-        systemRenderer = GetComponent<Renderer>();
+        // Cast a ray from the camera to detect which object is under the mouse
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
 
-        // Check if the systemRenderer exists and has a material
-        if (systemRenderer != null)
+        if (Physics.Raycast(ray, out hit))
         {
-            // Store the system's current material as the default
-            defaultMaterial = systemRenderer.material;
+            GameObject hoveredObject = hit.collider.gameObject;
+
+            // Only highlight the object if it has the SystemHighlighter script
+            SystemHighlighter systemHighlighter = hoveredObject.GetComponent<SystemHighlighter>();
+            if (systemHighlighter != null && hoveredObject != currentHighlightedObject)
+            {
+                HighlightSystem(hoveredObject);
+            }
+        }
+        else if (currentHighlightedObject != null)
+        {
+            // If no object is under the mouse, stop highlighting the previous object
+            StopHighlighting(currentHighlightedObject);
+        }
+    }
+
+    // Method to highlight the system with outline
+    public void HighlightSystem(GameObject system)
+    {
+        if (currentHighlightedObject != null && currentHighlightedObject != system)
+        {
+            StopHighlighting(currentHighlightedObject);
+        }
+
+        Renderer[] renderers = system.GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0)
+        {
+            foreach (Renderer renderer in renderers)
+            {
+                if (!originalProperties.ContainsKey(renderer))
+                {
+                    // Store the original MaterialPropertyBlock
+                    MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(mpb);
+                    originalProperties[renderer] = mpb;
+                }
+
+                // Create a new MaterialPropertyBlock for the outline
+                MaterialPropertyBlock outlineMPB = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(outlineMPB);
+
+                // Set the outline color and width
+                outlineMPB.SetColor("_OutlineColor", outlineColor);
+                outlineMPB.SetFloat("_Outline", outlineWidth);
+
+                // Apply the property block to the renderer
+                renderer.SetPropertyBlock(outlineMPB);
+
+                Debug.Log("Applied outline to " + renderer.gameObject.name);
+            }
+            currentHighlightedObject = system;
+            Debug.Log($"{system.name} is now highlighted.");
         }
         else
         {
-            Debug.LogError("Renderer not found on system object.");
+            Debug.LogError("No renderers found for " + system.name);
         }
     }
 
-    // Method to highlight the system (apply pulsing material)
-    public void HighlightSystem(GameObject system)
-    {
-        Renderer renderer = system.GetComponent<Renderer>();
-        if (renderer != null && highlightMaterial != null)
-        {
-            // Apply the highlight material
-            renderer.material = highlightMaterial;
-        }
-    }
-
-    // Method to stop highlighting and return to the default material
+    // Method to stop highlighting and return to the default properties
     public void StopHighlighting(GameObject system)
     {
-        Renderer renderer = system.GetComponent<Renderer>();
-        if (renderer != null && defaultMaterial != null)
+        Renderer[] renderers = system.GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
         {
-            // Revert to the default material
-            renderer.material = defaultMaterial;
+            if (originalProperties.ContainsKey(renderer))
+            {
+                // Restore the original MaterialPropertyBlock
+                renderer.SetPropertyBlock(originalProperties[renderer]);
+                originalProperties.Remove(renderer);
+
+                Debug.Log("Restored original properties to " + renderer.gameObject.name);
+            }
+            else
+            {
+                Debug.LogWarning("Original properties not found for " + renderer.gameObject.name);
+            }
         }
+        Debug.Log($"{system.name} has stopped highlighting.");
+        currentHighlightedObject = null;
     }
 }
