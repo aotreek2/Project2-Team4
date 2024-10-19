@@ -15,9 +15,14 @@ public class ShipController : MonoBehaviour
 
     // References to system controllers
     public HullSystemController hullSystemController;
-    public GeneratorController generatorController; // New GeneratorController
+    public GeneratorController generatorController;
     public LifeSupportController lifeSupportController;
     public EngineSystemController engineSystemController;
+
+    // Ship health variables
+    private float shipHealth = 100f;
+    private float shipMaxHealth = 100f;
+    public float criticalThreshold = 30f; // Health below this percentage is considered critical
 
     void Start()
     {
@@ -50,6 +55,7 @@ public class ShipController : MonoBehaviour
     {
         UpdateSystems();
         UpdateSystemCubes();
+        UpdateShipHealth();
     }
 
     // Initialize controllers
@@ -137,7 +143,6 @@ public class ShipController : MonoBehaviour
             }
         }
     }
-
     public void ShakeCamera(float duration, float magnitude)
     {
         Debug.Log("ShakeCamera called with duration: " + duration + ", magnitude: " + magnitude);
@@ -153,24 +158,28 @@ public class ShipController : MonoBehaviour
         }
 
         Vector3 originalPosition = mainCamera.transform.localPosition;
-
         float elapsed = 0.0f;
+        float damping = 1.0f; // Value to reduce shaking over time
 
         while (elapsed < duration)
         {
-            float x = Random.Range(-1f, 1f) * magnitude;
-            float y = Random.Range(-1f, 1f) * magnitude;
+            // Reduce the magnitude gradually to make the shake smoother (damping effect)
+            float currentMagnitude = magnitude * (1.0f - (elapsed / duration)) * damping;
 
+            // Generate random shake values
+            float x = Random.Range(-1f, 1f) * currentMagnitude;
+            float y = Random.Range(-1f, 1f) * currentMagnitude;
+
+            // Apply shake to the camera
             mainCamera.transform.localPosition = new Vector3(originalPosition.x + x, originalPosition.y + y, originalPosition.z);
 
-            elapsed += Time.unscaledDeltaTime; // Use unscaled delta time
-
+            elapsed += Time.deltaTime;
             yield return null;
         }
 
+        // Return the camera to its original position after shaking
         mainCamera.transform.localPosition = originalPosition;
     }
-
     // Forward engine-related calls to EngineSystemController
     public void DamageEngine(float damage)
     {
@@ -267,16 +276,16 @@ public class ShipController : MonoBehaviour
             switch (systemType)
             {
                 case CubeInteraction.SystemType.Engines:
-                    engineSystemController.RepairEngine(100f); // Fully repair the engine
+                    engineSystemController.RepairEngine(engineSystemController.engineMaxHealth - engineSystemController.engineHealth); // Repair the missing health amount
                     break;
                 case CubeInteraction.SystemType.Hull:
-                    hullSystemController.RepairHull(100f); // Fully repair the hull
+                    hullSystemController.RepairHull(hullSystemController.hullMaxHealth - hullSystemController.hullHealth); // Repair the missing health amount
                     break;
                 case CubeInteraction.SystemType.LifeSupport:
-                    lifeSupportController.RepairLifeSupport(100f); // Fully repair life support
+                    lifeSupportController.RepairLifeSupport(lifeSupportController.lifeSupportMaxHealth - lifeSupportController.lifeSupportHealth); // Repair the missing health amount
                     break;
                 case CubeInteraction.SystemType.Generator:
-                    RepairGenerator(100f); // Fully repair the generator
+                    RepairGenerator(generatorController.generatorMaxHealth - generatorController.generatorHealth); // Repair the missing health amount
                     break;
             }
 
@@ -301,8 +310,72 @@ public class ShipController : MonoBehaviour
 
     public bool AreCriticalSystemsRepaired()
     {
-        return lifeSupportController.lifeSupportHealth == lifeSupportController.lifeSupportMaxHealth &&
-            engineSystemController.engineHealth == engineSystemController.engineMaxHealth &&
-            hullSystemController.hullHealth == hullSystemController.hullMaxHealth;
+        float tolerance = 0.01f; // Define a small tolerance for float comparison
+
+        bool lifeSupportRepaired = Mathf.Abs(lifeSupportController.lifeSupportHealth - lifeSupportController.lifeSupportMaxHealth) < tolerance;
+        bool engineRepaired = Mathf.Abs(engineSystemController.engineHealth - engineSystemController.engineMaxHealth) < tolerance;
+        bool hullRepaired = Mathf.Abs(hullSystemController.hullHealth - hullSystemController.hullMaxHealth) < tolerance;
+
+        return lifeSupportRepaired && engineRepaired && hullRepaired;
+    }
+
+    // **New Methods and Modifications**
+
+    // Method to update ship's overall health based on system health
+    void UpdateShipHealth()
+    {
+        // Calculate the average health of all systems
+        float totalHealthPercentage = 0f;
+        int systemCount = 0;
+
+        if (lifeSupportController != null)
+        {
+            totalHealthPercentage += lifeSupportController.lifeSupportHealth / lifeSupportController.lifeSupportMaxHealth;
+            systemCount++;
+        }
+
+        if (engineSystemController != null)
+        {
+            totalHealthPercentage += engineSystemController.engineHealth / engineSystemController.engineMaxHealth;
+            systemCount++;
+        }
+
+        if (hullSystemController != null)
+        {
+            totalHealthPercentage += hullSystemController.hullHealth / hullSystemController.hullMaxHealth;
+            systemCount++;
+        }
+
+        if (generatorController != null)
+        {
+            totalHealthPercentage += generatorController.generatorHealth / generatorController.generatorMaxHealth;
+            systemCount++;
+        }
+
+        if (systemCount > 0)
+        {
+            float averageHealthPercentage = totalHealthPercentage / systemCount;
+            shipHealth = averageHealthPercentage * shipMaxHealth;
+        }
+        else
+        {
+            shipHealth = shipMaxHealth;
+        }
+
+        // Debug.Log($"Ship Health: {shipHealth}/{shipMaxHealth} ({(shipHealth / shipMaxHealth) * 100f}%)");
+    }
+
+    // Method to determine if the ship is in critical condition
+    public bool IsCriticalCondition()
+    {
+        // Ship is in critical condition if shipHealth is below criticalThreshold percentage
+        float healthPercentage = (shipHealth / shipMaxHealth) * 100f;
+        return healthPercentage <= criticalThreshold;
+    }
+
+    // Method to get ship's current health percentage
+    public float GetShipHealthPercentage()
+    {
+        return (shipHealth / shipMaxHealth) * 100f;
     }
 }
