@@ -9,15 +9,15 @@ public class ShipController : MonoBehaviour
 
     public GameObject generatorCube; // Generator cube
     public ResourceManager resourceManager;
-    public Camera mainCamera;
     public AudioClip hullDamageSound;
-    public AudioSource audioSource; // Reference to the main camera
+    public AudioSource audioSource;
 
     // References to system controllers
     public HullSystemController hullSystemController;
     public GeneratorController generatorController;
     public LifeSupportController lifeSupportController;
     public EngineSystemController engineSystemController;
+    public CameraController cameraController; // Reference to CameraController
 
     // Ship health variables
     private float shipHealth = 100f;
@@ -26,21 +26,19 @@ public class ShipController : MonoBehaviour
 
     void Start()
     {
+        // Initialize cameraController
+        cameraController = FindObjectOfType<CameraController>();
+        if (cameraController == null)
+        {
+            Debug.LogError("CameraController not found in the scene. Please ensure there is a CameraController script in the scene.");
+        }
+
         if (resourceManager == null)
         {
             resourceManager = FindObjectOfType<ResourceManager>();
             if (resourceManager == null)
             {
                 Debug.LogError("ResourceManager not found in the scene. Please ensure there is a ResourceManager script in the scene.");
-            }
-        }
-
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-            if (mainCamera == null)
-            {
-                Debug.LogError("Main Camera is not assigned and cannot be found in the scene. Please assign the Main Camera in the inspector.");
             }
         }
 
@@ -143,43 +141,18 @@ public class ShipController : MonoBehaviour
             }
         }
     }
+
+    // Corrected ShakeCamera method
     public void ShakeCamera(float duration, float magnitude)
     {
-        Debug.Log("ShakeCamera called with duration: " + duration + ", magnitude: " + magnitude);
-        StartCoroutine(ShakeCameraCoroutine(duration, magnitude));
+        if (cameraController != null)
+        {
+            cameraController.ShakeCamera(duration, magnitude);
+        }
     }
 
-    private IEnumerator ShakeCameraCoroutine(float duration, float magnitude)
-    {
-        if (mainCamera == null)
-        {
-            Debug.LogError("Main Camera is null. Cannot shake camera.");
-            yield break;
-        }
+    // Remove DoCameraShake method from ShipController (since it's now in CameraController)
 
-        Vector3 originalPosition = mainCamera.transform.localPosition;
-        float elapsed = 0.0f;
-        float damping = 1.0f; // Value to reduce shaking over time
-
-        while (elapsed < duration)
-        {
-            // Reduce the magnitude gradually to make the shake smoother (damping effect)
-            float currentMagnitude = magnitude * (1.0f - (elapsed / duration)) * damping;
-
-            // Generate random shake values
-            float x = Random.Range(-1f, 1f) * currentMagnitude;
-            float y = Random.Range(-1f, 1f) * currentMagnitude;
-
-            // Apply shake to the camera
-            mainCamera.transform.localPosition = new Vector3(originalPosition.x + x, originalPosition.y + y, originalPosition.z);
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // Return the camera to its original position after shaking
-        mainCamera.transform.localPosition = originalPosition;
-    }
     // Forward engine-related calls to EngineSystemController
     public void DamageEngine(float damage)
     {

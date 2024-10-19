@@ -2219,6 +2219,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4304801035757712902, guid: b5527049e5437c744a0cd779b5ff4c97, type: 3}
   m_PrefabInstance: {fileID: 160317753}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &168313899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 168313900}
+  m_Layer: 0
+  m_Name: CameraPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &168313900
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168313899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.192, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1286740636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &172859408
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15901,6 +15932,8 @@ GameObject:
   - component: {fileID: 774986775}
   - component: {fileID: 774986774}
   - component: {fileID: 774986773}
+  - component: {fileID: 774986785}
+  - component: {fileID: 774986784}
   m_Layer: 8
   m_Name: Engineer (2)
   m_TagString: Untagged
@@ -16263,6 +16296,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 774986775}
   selectedSFX: {fileID: 774986773}
   assignedSFX: {fileID: 774986774}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &774986779
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16375,9 +16415,52 @@ Transform:
   m_LocalPosition: {x: -28, y: 2.36, z: -18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1439027881}
   m_Father: {fileID: 1424548680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &774986784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 774986772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c50232852f51c14db5bdee665905665, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1439027881}
+  walkSpeed: 5
+  mouseSensitivity: 2
+  gravity: -9.81
+--- !u!143 &774986785
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 774986772}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5000001
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &794283985 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6742697630751074790, guid: 1b6c78e394bb8e04c89a4e04e791c716, type: 3}
@@ -22645,13 +22728,14 @@ MonoBehaviour:
   crewCount: 20
   generatorCube: {fileID: 1747077178}
   resourceManager: {fileID: 852831800}
-  mainCamera: {fileID: 609081460}
   hullDamageSound: {fileID: 8300000, guid: 5d2557ef716981e429b9ca1c62f36cf4, type: 3}
   audioSource: {fileID: 852831807}
   hullSystemController: {fileID: 2087564741}
   generatorController: {fileID: 1747077189}
   lifeSupportController: {fileID: 1494198414}
   engineSystemController: {fileID: 1743883296}
+  cameraController: {fileID: 0}
+  criticalThreshold: 30
 --- !u!82 &852831806
 AudioSource:
   m_ObjectHideFlags: 0
@@ -28432,6 +28516,8 @@ GameObject:
   - component: {fileID: 1286740638}
   - component: {fileID: 1286740640}
   - component: {fileID: 1286740639}
+  - component: {fileID: 1286740642}
+  - component: {fileID: 1286740641}
   m_Layer: 8
   m_Name: Engineer
   m_TagString: Untagged
@@ -28485,6 +28571,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1286740638}
   selectedSFX: {fileID: 1286740639}
   assignedSFX: {fileID: 1286740640}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1286740632
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -28597,7 +28690,8 @@ Transform:
   m_LocalPosition: {x: 18.75, y: 2.36, z: -2.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 168313900}
   m_Father: {fileID: 1424548680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &1286740637
@@ -28619,7 +28713,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 2
+  m_Radius: 5
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!82 &1286740638
 AudioSource:
@@ -28909,6 +29003,48 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1286740641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286740629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c50232852f51c14db5bdee665905665, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 168313900}
+  walkSpeed: 5
+  mouseSensitivity: 2
+  gravity: -9.81
+--- !u!143 &1286740642
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286740629}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5000001
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1290522203
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29562,6 +29698,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1317708633}
   selectedSFX: {fileID: 1317708631}
   assignedSFX: {fileID: 1317708632}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1317708637
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -31217,6 +31360,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5441165374268697071, guid: a926e4b6f2223ce458aa57089e67ab38, type: 3}
   m_PrefabInstance: {fileID: 1431148185}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1439027880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1439027881}
+  m_Layer: 0
+  m_Name: CameraPosition (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1439027881
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1439027880}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.060001373, y: 0.78999996, z: 0.15100098}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 774986783}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1442263573
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31876,6 +32050,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1452440852}
   selectedSFX: {fileID: 1452440850}
   assignedSFX: {fileID: 1452440851}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1452440856
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -33831,6 +34012,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1578948012}
   selectedSFX: {fileID: 1578948010}
   assignedSFX: {fileID: 1578948011}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1578948016
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -41163,6 +41351,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1732459355}
   selectedSFX: {fileID: 1732459356}
   assignedSFX: {fileID: 1732459357}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1732459349
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -44118,6 +44313,13 @@ MonoBehaviour:
   walkingSFX: {fileID: 1925451644}
   selectedSFX: {fileID: 1925451642}
   assignedSFX: {fileID: 1925451643}
+  wanderRadius: 10
+  minWaitTime: 0
+  maxWaitTime: 2
+  normalSpeed: 3.5
+  panicSpeed: 6
+  normalAcceleration: 8
+  panicAcceleration: 12
 --- !u!54 &1925451648
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -46210,7 +46412,7 @@ GameObject:
   - component: {fileID: 2119860435}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -46237,6 +46439,9 @@ MonoBehaviour:
   rotationSpeed: 100
   zoomSpeed: 5
   zoomDampening: 5
+  isInFirstPerson: 0
+  transitionDuration: 1
+  instructionText: {fileID: 0}
 --- !u!4 &2119860434
 Transform:
   m_ObjectHideFlags: 0

@@ -39,6 +39,9 @@ public class CrewMember : MonoBehaviour
     // Reference to ShipController to check ship status
     private ShipController shipController;
 
+    // Rigidbody reference for first-person control mode
+    private Rigidbody rb;
+
     void Start()
     {
         navAgent = GetComponent<NavMeshAgent>();
@@ -56,6 +59,9 @@ public class CrewMember : MonoBehaviour
 
         // Randomize initial wait time counter to prevent synchronization
         waitTimeCounter = Random.Range(0f, maxWaitTime);
+
+        // Get the Rigidbody component
+        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -269,5 +275,38 @@ public class CrewMember : MonoBehaviour
         NavMesh.SamplePosition(randDirection, out navHit, dist, layerMask);
 
         return navHit.position;
+    }
+
+    // Methods to enable and disable AI control
+    public void EnableAI()
+    {
+        if (navAgent != null)
+        {
+            navAgent.enabled = true;
+        }
+        this.enabled = true; // Enable the CrewMember script
+
+        // Enable Rigidbody
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
+
+    public void DisableAI()
+    {
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+        }
+        this.enabled = false; // Disable the CrewMember script
+
+        // Disable Rigidbody
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
     }
 }
