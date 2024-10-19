@@ -10,25 +10,26 @@ public class LightFlickerController : MonoBehaviour
     [Header("Flicker Settings")]
     public AnimationCurve flickerFrequencyCurve;
     public AnimationCurve flickerIntensityCurve;
-    public bool randomizeFlickerPattern = true; // Option to randomize flicker behavior
+    public bool randomizeFlickerPattern = true;
 
     [Header("Light Intensity Settings")]
-    public float minLightIntensity = 1.0f; // Minimum intensity when lights are on
-    public float maxLightIntensity = 2.5f; // Maximum intensity when lights are on
+    public float minLightIntensity = 0.5f;
+    public float maxLightIntensity = 3.0f;
 
     [Header("Lighting Style Settings")]
     public Color damagedLightColor = Color.red;
     public Color stableLightColor = Color.white;
-    public float transitionSpeed = 2f; // How fast the lights transition between damaged and stable
+    public float transitionSpeed = 2f;
 
     [Header("Emergency Light Settings")]
-    public List<Light> emergencyLights = new List<Light>(); // Supports multiple emergency lights
+    public List<Light> emergencyLights = new List<Light>();
     public AudioSource alarmAudioSource;
     public AudioClip alarmClip;
     public float pulsateSpeed = 2f;
-    public float emergencyMinIntensity = 0f;
+    public float emergencyMinIntensity = 1f;
     public float emergencyMaxIntensity = 5f;
-    public KeyCode toggleEmergencyKey = KeyCode.E; // Default key to trigger emergency
+    public Color emergencyLightColor = Color.red; // Set the emergency light color to red
+    public float criticalHealthThreshold = 20f;
     private bool emergencyActive = false;
     private bool isAlarmPlaying = false;
 
@@ -56,20 +57,6 @@ public class LightFlickerController : MonoBehaviour
 
     void Update()
     {
-        // Toggle emergency lights and alarms using the hotkey
-        if (Input.GetKeyDown(toggleEmergencyKey))
-        {
-            emergencyActive = !emergencyActive;
-            if (emergencyActive)
-            {
-                StartEmergency();
-            }
-            else
-            {
-                StopEmergency();
-            }
-        }
-
         // Handle emergency lights pulsating effect if active
         if (emergencyActive)
         {
@@ -79,6 +66,7 @@ public class LightFlickerController : MonoBehaviour
                 {
                     float intensity = Mathf.Lerp(emergencyMinIntensity, emergencyMaxIntensity, Mathf.PingPong(Time.time * pulsateSpeed, 1));
                     light.intensity = intensity;
+                    light.color = emergencyLightColor; // Ensure emergency lights are red
                 }
             }
         }
@@ -90,7 +78,7 @@ public class LightFlickerController : MonoBehaviour
         generatorHealth = maxHealth;
     }
 
-    // Update the generator health and trigger flicker effects based on the health
+    // Update the generator health and trigger flicker and emergency effects based on health
     public void UpdateGeneratorHealth(float currentHealth)
     {
         generatorHealth = currentHealth;
@@ -99,6 +87,16 @@ public class LightFlickerController : MonoBehaviour
         if (!isFlickering && generatorHealth < generatorMaxHealth)
         {
             StartCoroutine(FlickerLoop());
+        }
+
+        // Check if emergency lights should be triggered
+        if (generatorHealth <= criticalHealthThreshold && !emergencyActive)
+        {
+            StartEmergency();
+        }
+        else if (generatorHealth > criticalHealthThreshold && emergencyActive)
+        {
+            StopEmergency();
         }
     }
 
@@ -114,7 +112,7 @@ public class LightFlickerController : MonoBehaviour
     {
         float healthPercentage = generatorHealth / generatorMaxHealth;
         Color targetColor = Color.Lerp(damagedLightColor, stableLightColor, healthPercentage);
-        float targetIntensity = Mathf.Lerp(minLightIntensity, maxLightIntensity, healthPercentage);
+        float targetIntensity = Mathf.Clamp(Mathf.Lerp(minLightIntensity, maxLightIntensity, healthPercentage), minLightIntensity, maxLightIntensity);
 
         foreach (var light in lightComponents)
         {
@@ -140,7 +138,7 @@ public class LightFlickerController : MonoBehaviour
         {
             float healthPercentage = generatorHealth / generatorMaxHealth;
             float flickerDuration = Mathf.Lerp(2f, 0.1f, 1 - healthPercentage);
-            float intensity = Mathf.Lerp(maxLightIntensity, minLightIntensity, 1 - healthPercentage);
+            float intensity = Mathf.Clamp(Mathf.Lerp(maxLightIntensity, minLightIntensity, 1 - healthPercentage), minLightIntensity, maxLightIntensity);
 
             float flickerInterval = Random.Range(0.05f, flickerDuration);
 
@@ -181,7 +179,7 @@ public class LightFlickerController : MonoBehaviour
             yield return new WaitForSeconds(offDuration);
 
             // Lights ON with random intensity to mimic unstable power
-            float intensity = Random.Range(minLightIntensity, maxLightIntensity);
+            float intensity = Mathf.Clamp(Random.Range(minLightIntensity, maxLightIntensity), minLightIntensity, maxLightIntensity);
             SetLightsEnabled(true, intensity);
             float onDuration = Random.Range(flickerOnTime, flickerOnTime * 1.2f);
             elapsed += onDuration;
@@ -218,6 +216,17 @@ public class LightFlickerController : MonoBehaviour
     // Start emergency lights and alarm
     private void StartEmergency()
     {
+        emergencyActive = true;
+
+        foreach (var light in emergencyLights)
+        {
+            if (light != null)
+            {
+                light.color = emergencyLightColor; // Set emergency light color to red
+                light.enabled = true; // Ensure emergency lights are turned on
+            }
+        }
+
         if (!isAlarmPlaying && alarmAudioSource != null && alarmClip != null)
         {
             alarmAudioSource.clip = alarmClip;
@@ -230,6 +239,8 @@ public class LightFlickerController : MonoBehaviour
     // Stop emergency lights and alarm
     private void StopEmergency()
     {
+        emergencyActive = false;
+
         if (isAlarmPlaying && alarmAudioSource != null)
         {
             alarmAudioSource.Stop();
@@ -241,6 +252,7 @@ public class LightFlickerController : MonoBehaviour
             if (light != null)
             {
                 light.intensity = emergencyMinIntensity; // Reset emergency light intensity
+                light.enabled = false; // Turn off emergency lights
             }
         }
     }

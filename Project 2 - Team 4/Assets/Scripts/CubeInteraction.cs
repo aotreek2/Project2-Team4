@@ -1,39 +1,87 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class CubeInteraction : MonoBehaviour
 {
     public enum SystemType { LifeSupport, Engines, Hull, Generator }
     public SystemType systemType;
 
-    public SystemPanelManager systemPanelManager;
+    public RepairProgressBar repairProgressBar;
+    public Collider repairZone;
+    public float baseRepairDuration = 10f; // Base duration to repair from 0% to 100% health without efficiency modifiers
+
     private CrewMember assignedCrewMember;
-
-    public Renderer cubeRenderer;
-    private Color defaultColor;
-    public Color repairingColor = Color.green;
-
     private bool isRepairing = false;
+    private float repairProgress = 0f;
+    private float repairDuration;
 
-    // **Added ChapterManager Reference**
-    private ChapterManager chapterManager;
+    // References to system controllers
+    private LifeSupportController lifeSupportController;
+    private EngineSystemController engineSystemController;
+    private GeneratorController generatorController;
 
     void Start()
     {
-        if (systemPanelManager == null)
+        if (repairProgressBar == null)
         {
-            Debug.LogError("SystemPanelManager not assigned in the Inspector!");
+            Debug.LogError("Repair progress bar not found. Please assign it in the Inspector.");
         }
 
-        if (cubeRenderer != null)
+        if (repairZone == null)
         {
-            defaultColor = cubeRenderer.material.color;
+            Debug.LogError("Repair zone not found. Please assign it in the Inspector.");
         }
 
-        // Initialize ChapterManager
-        chapterManager = FindObjectOfType<ChapterManager>();
+        // Hide the repair progress bar initially
+        if (repairProgressBar != null)
+        {
+            repairProgressBar.gameObject.SetActive(false);
+        }
+
+        // Get reference to the appropriate system controller based on systemType
+        switch (systemType)
+        {
+            case SystemType.LifeSupport:
+                lifeSupportController = GetComponent<LifeSupportController>();
+                if (lifeSupportController == null)
+                {
+                    Debug.LogError("LifeSupportController not found on " + gameObject.name);
+                }
+                else
+                {
+                    // Damage the system for testing purposes
+                    lifeSupportController.DamageLifeSupport(50f);
+                }
+                break;
+            case SystemType.Engines:
+                engineSystemController = GetComponent<EngineSystemController>();
+                if (engineSystemController == null)
+                {
+                    Debug.LogError("EngineSystemController not found on " + gameObject.name);
+                }
+                else
+                {
+                    // Damage the system for testing purposes
+                    engineSystemController.DamageEngine(50f);
+                }
+                break;
+            case SystemType.Generator:
+                generatorController = GetComponent<GeneratorController>();
+                if (generatorController == null)
+                {
+                    Debug.LogError("GeneratorController not found on " + gameObject.name);
+                }
+                else
+                {
+                    // Damage the system for testing purposes
+                    generatorController.DamageGenerator(50f);
+                }
+                break;
+            // Add cases for other systems if needed
+        }
     }
 
+    // Assign a crew member to repair this system
     public void SetSelectedCrewMember(CrewMember crewMember)
     {
         assignedCrewMember = crewMember;
@@ -46,40 +94,90 @@ public class CubeInteraction : MonoBehaviour
 
         Debug.Log("Crew member " + assignedCrewMember.crewName + " assigned to system: " + systemType);
 
-        assignedCrewMember.AssignToTask(CrewMember.Task.RepairHull, transform.position, FindObjectOfType<ShipController>(), this);
+        // Move the crew member to the system
+        assignedCrewMember.AssignToSystem(this);
+    }
 
-        if (systemPanelManager != null)
+    void OnTriggerEnter(Collider other)
+    {
+        CrewMember crew = other.GetComponent<CrewMember>();
+        if (crew != null && crew == assignedCrewMember)
         {
-            systemPanelManager.OpenSystemPanel(systemType, FindObjectOfType<ShipController>());
-            Debug.Log("SystemPanelManager opened for system: " + systemType);
-        }
-        else
-        {
-            Debug.LogError("SystemPanelManager not found or not assigned!");
+            Debug.Log("Assigned crewmate entered the repair zone.");
+
+            // Start the repair process
+            StartRepair(crew, crew.taskEfficiency);
         }
     }
 
-    // **Add the StartRepair method back into the script**
+    void OnTriggerExit(Collider other)
+    {
+        CrewMember crew = other.GetComponent<CrewMember>();
+        if (crew != null && crew == assignedCrewMember)
+        {
+            Debug.Log("Assigned crewmate exited the repair zone.");
+
+            // Stop the repair process
+            StopRepair();
+        }
+    }
+
+    // Start the repair process
     public void StartRepair(CrewMember crewMember, float efficiency)
     {
+        // Check if the system is already fully repaired
+        if (IsSystemFullyRepaired())
+        {
+            Debug.Log("System " + systemType + " is already fully repaired.");
+            return;
+        }
+
         if (!isRepairing)
         {
             isRepairing = true;
-            ChangeSystemColor(repairingColor);
-            Debug.Log("Repair started on system: " + systemType);
-            StartCoroutine(RepairSystem(crewMember, efficiency));
+            repairProgress = 0f; // Reset progress
+
+            // Get the current health and max health from the system controller
+            float currentHealth = GetCurrentSystemHealth();
+            float maxHealth = GetMaxSystemHealth();
+
+            // Adjust the repair duration dynamically based on the system's current damage
+            float damageProportion = (maxHealth - currentHealth) / maxHealth;
+            repairDuration = baseRepairDuration * damageProportion / efficiency;
+
+            // Ensure repairDuration is not zero
+            if (repairDuration <= 0f)
+            {
+                repairDuration = 0.1f;
+            }
+
+            Debug.Log("Repair started on system: " + systemType + " with repair duration: " + repairDuration);
+
+            // Show the repair progress bar when repair starts
+            if (repairProgressBar != null)
+            {
+                repairProgressBar.gameObject.SetActive(true);
+            }
+
+            StartCoroutine(RepairSystem(crewMember, repairDuration));
         }
     }
 
-    private IEnumerator RepairSystem(CrewMember crewMember, float efficiency)
+    private IEnumerator RepairSystem(CrewMember crewMember, float duration)
     {
-        float repairProgress = 0f;
-        float adjustedRepairDuration = 5f / efficiency;
+        float elapsedTime = 0f;
 
-        while (repairProgress < 1f)
+        // Smoothly repair over time
+        while (elapsedTime < duration)
         {
-            repairProgress += Time.deltaTime / adjustedRepairDuration;
-            systemPanelManager.UpdateRepairProgress(repairProgress);
+            elapsedTime += Time.deltaTime;
+            repairProgress = Mathf.Clamp01(elapsedTime / duration);
+
+            if (repairProgressBar != null)
+            {
+                repairProgressBar.UpdateRepairProgress(repairProgress); // Update the slider
+            }
+
             yield return null;
         }
 
@@ -87,69 +185,135 @@ public class CubeInteraction : MonoBehaviour
         crewMember.CompleteTask();
     }
 
-    public void ChangeSystemColor(Color newColor)
+    public void StopRepair()
     {
-        if (cubeRenderer != null)
+        if (isRepairing)
         {
-            cubeRenderer.material.color = newColor;
+            StopAllCoroutines();
+            isRepairing = false;
+            repairProgress = 0f;
+            Debug.Log("Repair stopped on system: " + systemType);
+
+            // Hide the repair progress bar
+            if (repairProgressBar != null)
+            {
+                repairProgressBar.gameObject.SetActive(false);
+            }
         }
     }
 
     public void CompleteRepair()
     {
         isRepairing = false;
-        ChangeSystemColor(defaultColor);
+
+        // Set the system's health to maximum after repair is complete
+        SetSystemHealthToMax();
         Debug.Log("Repair completed on system: " + systemType);
 
-         TriggerRepairDialogue();
+        // Hide the repair progress bar when the repair is done
+        if (repairProgressBar != null)
+        {
+            repairProgressBar.gameObject.SetActive(false);
+        }
 
+        repairProgress = 0f;
+    }
+
+    // Method to check if the system is fully repaired
+    private bool IsSystemFullyRepaired()
+    {
+        float currentHealth = GetCurrentSystemHealth();
+        float maxHealth = GetMaxSystemHealth();
+
+        return Mathf.Approximately(currentHealth, maxHealth);
+    }
+
+    // Methods to get and set system health through the controllers
+    private float GetCurrentSystemHealth()
+    {
         switch (systemType)
         {
             case SystemType.LifeSupport:
-                FindObjectOfType<LifeSupportController>().RepairLifeSupport(20f); // Use LifeSupportController for LifeSupport repairs
-                break;
-
+                return lifeSupportController != null ? lifeSupportController.lifeSupportHealth : 0f;
             case SystemType.Engines:
-                FindObjectOfType<ShipController>().RepairEngine(20f); // Use ShipController for Engine repairs
-                break;
-
-            case SystemType.Hull:
-                FindObjectOfType<HullSystemController>().RepairHull(20f); // Use HullSystemController for Hull repairs
-                break;
-
+                return engineSystemController != null ? engineSystemController.engineHealth : 0f;
             case SystemType.Generator:
-                FindObjectOfType<ShipController>().RepairGenerator(20f); // Use ShipController for Generator repairs
+                return generatorController != null ? generatorController.generatorHealth : 0f;
+            // Add cases for other systems
+            default:
+                return 0f;
+        }
+    }
+
+    private float GetMaxSystemHealth()
+    {
+        switch (systemType)
+        {
+            case SystemType.LifeSupport:
+                return lifeSupportController != null ? lifeSupportController.lifeSupportMaxHealth : 100f;
+            case SystemType.Engines:
+                return engineSystemController != null ? engineSystemController.engineMaxHealth : 100f;
+            case SystemType.Generator:
+                return generatorController != null ? generatorController.generatorMaxHealth : 100f;
+            // Add cases for other systems
+            default:
+                return 100f;
+        }
+    }
+
+    private void SetSystemHealthToMax()
+    {
+        switch (systemType)
+        {
+            case SystemType.LifeSupport:
+                if (lifeSupportController != null)
+                {
+                    lifeSupportController.RepairLifeSupport(GetMaxSystemHealth());
+                }
                 break;
+            case SystemType.Engines:
+                if (engineSystemController != null)
+                {
+                    engineSystemController.RepairEngine(GetMaxSystemHealth());
+                }
+                break;
+            case SystemType.Generator:
+                if (generatorController != null)
+                {
+                    generatorController.RepairGenerator(GetMaxSystemHealth());
+                }
+                break;
+            // Add cases for other systems
         }
-
-        systemPanelManager.UpdateRepairProgress(0f);
     }
 
-    private void TriggerRepairDialogue()
+    // Example method to damage the system (through the controller)
+    public void DamageSystem(float damageAmount)
     {
-        DialogueManager dialogueManager = FindObjectOfType<DialogueManager>();
-        if (dialogueManager != null)
+        switch (systemType)
         {
-            string[] dialogueLines = new string[]
-            {
-                $"{systemType} has been successfully repaired!",
-                "Good job! Keep it up."
-            };
-            dialogueManager.StartDialogue(dialogueLines);
+            case SystemType.LifeSupport:
+                if (lifeSupportController != null)
+                {
+                    lifeSupportController.DamageLifeSupport(damageAmount);
+                    Debug.Log("System " + systemType + " damaged. Current health: " + lifeSupportController.lifeSupportHealth);
+                }
+                break;
+            case SystemType.Engines:
+                if (engineSystemController != null)
+                {
+                    engineSystemController.DamageEngine(damageAmount);
+                    Debug.Log("System " + systemType + " damaged. Current health: " + engineSystemController.engineHealth);
+                }
+                break;
+            case SystemType.Generator:
+                if (generatorController != null)
+                {
+                    generatorController.DamageGenerator(damageAmount);
+                    Debug.Log("System " + systemType + " damaged. Current health: " + generatorController.generatorHealth);
+                }
+                break;
+            // Add cases for other systems
         }
     }
-
-    public void SetPulsingEffect(bool isActive)
-    {
-        PulsingEffect pulsingEffect = GetComponent<PulsingEffect>();
-        if (pulsingEffect == null && isActive)
-        {
-            pulsingEffect = gameObject.AddComponent<PulsingEffect>();
-        }
-        else if (pulsingEffect != null && !isActive)
-        {
-            Destroy(pulsingEffect);
-        }
-    }
-
 }

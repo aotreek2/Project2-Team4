@@ -39,45 +39,8 @@ public class ShipController : MonoBehaviour
             }
         }
 
-        // Initialize the HullSystemController
-        if (hullSystemController == null)
-        {
-            hullSystemController = FindObjectOfType<HullSystemController>();
-            if (hullSystemController == null)
-            {
-                Debug.LogError("HullSystemController not found. Ensure it's properly set in the scene.");
-            }
-        }
-
-        // Initialize the GeneratorController
-        if (generatorController == null)
-        {
-            generatorController = FindObjectOfType<GeneratorController>();
-            if (generatorController == null)
-            {
-                Debug.LogError("GeneratorController not found in the scene. Please assign it in the inspector.");
-            }
-        }
-
-        // Initialize the LifeSupportController
-        if (lifeSupportController == null)
-        {
-            lifeSupportController = FindObjectOfType<LifeSupportController>();
-            if (lifeSupportController == null)
-            {
-                Debug.LogError("LifeSupportController not found. Ensure it's properly set in the scene.");
-            }
-        }
-
-        // Initialize the EngineSystemController
-        if (engineSystemController == null)
-        {
-            engineSystemController = FindObjectOfType<EngineSystemController>();
-            if (engineSystemController == null)
-            {
-                Debug.LogError("EngineSystemController not found. Ensure it's properly set in the scene.");
-            }
-        }
+        // Initialize system controllers
+        InitializeControllers();
 
         // Initialize cubes' colors
         UpdateSystemCubes();
@@ -87,6 +50,46 @@ public class ShipController : MonoBehaviour
     {
         UpdateSystems();
         UpdateSystemCubes();
+    }
+
+    // Initialize controllers
+    private void InitializeControllers()
+    {
+        if (hullSystemController == null)
+        {
+            hullSystemController = FindObjectOfType<HullSystemController>();
+            if (hullSystemController == null)
+            {
+                Debug.LogError("HullSystemController not found. Ensure it's properly set in the scene.");
+            }
+        }
+
+        if (generatorController == null)
+        {
+            generatorController = FindObjectOfType<GeneratorController>();
+            if (generatorController == null)
+            {
+                Debug.LogError("GeneratorController not found in the scene. Please assign it in the inspector.");
+            }
+        }
+
+        if (lifeSupportController == null)
+        {
+            lifeSupportController = FindObjectOfType<LifeSupportController>();
+            if (lifeSupportController == null)
+            {
+                Debug.LogError("LifeSupportController not found. Ensure it's properly set in the scene.");
+            }
+        }
+
+        if (engineSystemController == null)
+        {
+            engineSystemController = FindObjectOfType<EngineSystemController>();
+            if (engineSystemController == null)
+            {
+                Debug.LogError("EngineSystemController not found. Ensure it's properly set in the scene.");
+            }
+        }
     }
 
     // Update efficiencies and system statuses
