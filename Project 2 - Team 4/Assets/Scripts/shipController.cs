@@ -18,6 +18,7 @@ public class ShipController : MonoBehaviour
     public LifeSupportController lifeSupportController;
     public EngineSystemController engineSystemController;
     public CameraController cameraController; // Reference to CameraController
+    public DecisionController decisionController; // Reference to the DecisionController
 
     // Ship health variables
     private float shipHealth = 100f;
@@ -28,22 +29,20 @@ public class ShipController : MonoBehaviour
     {
         // Initialize cameraController
         cameraController = FindObjectOfType<CameraController>();
-        if (cameraController == null)
-        {
-            Debug.LogError("CameraController not found in the scene. Please ensure there is a CameraController script in the scene.");
-        }
 
         if (resourceManager == null)
         {
             resourceManager = FindObjectOfType<ResourceManager>();
-            if (resourceManager == null)
-            {
-                Debug.LogError("ResourceManager not found in the scene. Please ensure there is a ResourceManager script in the scene.");
-            }
         }
 
         // Initialize system controllers
         InitializeControllers();
+
+        // Ensure the decision controller is set
+        if (decisionController == null)
+        {
+            decisionController = FindObjectOfType<DecisionController>();
+        }
 
         // Initialize cubes' colors
         UpdateSystemCubes();
@@ -54,6 +53,7 @@ public class ShipController : MonoBehaviour
         UpdateSystems();
         UpdateSystemCubes();
         UpdateShipHealth();
+        CheckForCriticalSystems();
     }
 
     // Initialize controllers
@@ -62,37 +62,21 @@ public class ShipController : MonoBehaviour
         if (hullSystemController == null)
         {
             hullSystemController = FindObjectOfType<HullSystemController>();
-            if (hullSystemController == null)
-            {
-                Debug.LogError("HullSystemController not found. Ensure it's properly set in the scene.");
-            }
         }
 
         if (generatorController == null)
         {
             generatorController = FindObjectOfType<GeneratorController>();
-            if (generatorController == null)
-            {
-                Debug.LogError("GeneratorController not found in the scene. Please assign it in the inspector.");
-            }
         }
 
         if (lifeSupportController == null)
         {
             lifeSupportController = FindObjectOfType<LifeSupportController>();
-            if (lifeSupportController == null)
-            {
-                Debug.LogError("LifeSupportController not found. Ensure it's properly set in the scene.");
-            }
         }
 
         if (engineSystemController == null)
         {
             engineSystemController = FindObjectOfType<EngineSystemController>();
-            if (engineSystemController == null)
-            {
-                Debug.LogError("EngineSystemController not found. Ensure it's properly set in the scene.");
-            }
         }
     }
 
@@ -108,7 +92,6 @@ public class ShipController : MonoBehaviour
         // Check for generator failure
         if (generatorController != null && generatorController.generatorHealth <= 0f)
         {
-            Debug.Log("Generator is down! Systems are losing power.");
             ShakeCamera(0.5f, 1.0f); // Trigger camera shake when generator fails
         }
     }
@@ -151,8 +134,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    // Remove DoCameraShake method from ShipController (since it's now in CameraController)
-
     // Forward engine-related calls to EngineSystemController
     public void DamageEngine(float damage)
     {
@@ -193,12 +174,7 @@ public class ShipController : MonoBehaviour
         if (crewCount >= amount)
         {
             crewCount -= amount;
-            Debug.Log($"{amount} crew members sacrificed.");
             AdjustCrewMorale(-10f); // Decrease morale due to sacrifice
-        }
-        else
-        {
-            Debug.Log("Not enough crew members to sacrifice.");
         }
     }
 
@@ -206,7 +182,6 @@ public class ShipController : MonoBehaviour
     {
         crewMorale += amount;
         crewMorale = Mathf.Clamp(crewMorale, 0f, 100f);
-        Debug.Log($"Crew morale adjusted by {amount}. Current morale: {crewMorale}%");
 
         // Update morale for each crew member
         CrewMember[] crewMembers = FindObjectsOfType<CrewMember>();
@@ -219,7 +194,6 @@ public class ShipController : MonoBehaviour
     public void AddCrew(int amount)
     {
         crewCount += amount;
-        Debug.Log($"{amount} crew members added. Total crew: {crewCount}.");
     }
 
     public void DamageHull(float damageAmount)
@@ -243,7 +217,6 @@ public class ShipController : MonoBehaviour
         if (crewCount >= crewAmount)
         {
             crewCount -= crewAmount;
-            Debug.Log($"{crewAmount} crew members sacrificed to repair {systemType}.");
 
             // Repair the system fully
             switch (systemType)
@@ -264,40 +237,37 @@ public class ShipController : MonoBehaviour
 
             AdjustCrewMorale(-20f); // Decrease morale due to sacrifice
         }
-        else
+    }
+
+    // **New Methods**
+
+    public void CheckForCriticalSystems()
+    {
+        if (engineSystemController != null)
         {
-            Debug.Log("Not enough crew members to sacrifice.");
+            // Trigger decision panel when health is critically low, but not zero
+            if (engineSystemController.engineHealth <= engineSystemController.engineMaxHealth * 0.3f && engineSystemController.engineHealth > 0)
+            {
+                decisionController.ShowDecision(
+                    "The engine is critically damaged! Sacrifice 3 crew members to repair the engine?",
+                    () => SacrificeCrewForRepair(3, CubeInteraction.SystemType.Engines),
+                    null
+                );
+            }
+            else if (engineSystemController.engineHealth == 0)
+            {
+                decisionController.ShowDecision(
+                    "The engine has completely failed! Sacrifice 5 crew members to restart the engine?",
+                    () => SacrificeCrewForRepair(5, CubeInteraction.SystemType.Engines),
+                    null
+                );
+            }
         }
     }
-
-    // **Added Methods for Chapter System**
-
-    public void DamageShipAtStart()
-    {
-        // Damage critical systems at the start of the game
-        lifeSupportController.DamageLifeSupport(50f);
-        engineSystemController.DamageEngine(50f);
-        hullSystemController.DamageHull(50f);
-        Debug.Log("Critical systems have been damaged at the start.");
-    }
-
-    public bool AreCriticalSystemsRepaired()
-    {
-        float tolerance = 0.01f; // Define a small tolerance for float comparison
-
-        bool lifeSupportRepaired = Mathf.Abs(lifeSupportController.lifeSupportHealth - lifeSupportController.lifeSupportMaxHealth) < tolerance;
-        bool engineRepaired = Mathf.Abs(engineSystemController.engineHealth - engineSystemController.engineMaxHealth) < tolerance;
-        bool hullRepaired = Mathf.Abs(hullSystemController.hullHealth - hullSystemController.hullMaxHealth) < tolerance;
-
-        return lifeSupportRepaired && engineRepaired && hullRepaired;
-    }
-
-    // **New Methods and Modifications**
 
     // Method to update ship's overall health based on system health
     void UpdateShipHealth()
     {
-        // Calculate the average health of all systems
         float totalHealthPercentage = 0f;
         int systemCount = 0;
 
@@ -334,21 +304,24 @@ public class ShipController : MonoBehaviour
         {
             shipHealth = shipMaxHealth;
         }
-
-        // Debug.Log($"Ship Health: {shipHealth}/{shipMaxHealth} ({(shipHealth / shipMaxHealth) * 100f}%)");
     }
 
-    // Method to determine if the ship is in critical condition
     public bool IsCriticalCondition()
     {
-        // Ship is in critical condition if shipHealth is below criticalThreshold percentage
         float healthPercentage = (shipHealth / shipMaxHealth) * 100f;
         return healthPercentage <= criticalThreshold;
     }
 
-    // Method to get ship's current health percentage
     public float GetShipHealthPercentage()
     {
         return (shipHealth / shipMaxHealth) * 100f;
+    }
+
+    public void AddBiomassFuel(float biomassAmount)
+    {
+        if (engineSystemController != null)
+        {
+            engineSystemController.AddFuel(biomassAmount); // Now biomass goes to the engine system
+        }
     }
 }

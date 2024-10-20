@@ -63,7 +63,9 @@ public class ChapterManager : MonoBehaviour
             "You must repair the Life Support, Engines, and Hull to proceed.",
             "Select a crew member and assign them to a system to begin repairs."
         };
-        dialogueManager.StartDialogue(dialogueLines);
+
+        // Here we pass a system type to the dialogue
+        dialogueManager.StartDialogue(dialogueLines, CubeInteraction.SystemType.LifeSupport);
 
         // Wait for the dialogue to finish
         yield return new WaitUntil(() => !dialogueManager.isDialogueActive);
@@ -73,6 +75,7 @@ public class ChapterManager : MonoBehaviour
         systemHighlighter.HighlightSystem(shipController.engineSystemController.gameObject);
         systemHighlighter.HighlightSystem(shipController.hullSystemController.gameObject);
     }
+
 
     // Apply initial damage to the systems to simulate a damaged state
     private void ApplyInitialDamageToSystems()

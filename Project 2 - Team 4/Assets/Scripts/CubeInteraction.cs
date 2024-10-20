@@ -49,7 +49,6 @@ public class CubeInteraction : MonoBehaviour
                 }
                 else
                 {
-                    // Damage the system for testing purposes
                     lifeSupportController.DamageLifeSupport(50f);
                 }
                 break;
@@ -61,7 +60,6 @@ public class CubeInteraction : MonoBehaviour
                 }
                 else
                 {
-                    // Damage the system for testing purposes
                     engineSystemController.DamageEngine(50f);
                 }
                 break;
@@ -73,11 +71,9 @@ public class CubeInteraction : MonoBehaviour
                 }
                 else
                 {
-                    // Damage the system for testing purposes
                     generatorController.DamageGenerator(50f);
                 }
                 break;
-            // Add cases for other systems if needed
         }
     }
 
@@ -166,6 +162,10 @@ public class CubeInteraction : MonoBehaviour
     private IEnumerator RepairSystem(CrewMember crewMember, float duration)
     {
         float elapsedTime = 0f;
+        float currentHealth = GetCurrentSystemHealth();
+
+        // Calculate death chance based on system health
+        float deathChance = Mathf.Clamp(1 - (currentHealth / 100f), 0f, 0.5f); // Up to 50% chance of death
 
         // Smoothly repair over time
         while (elapsedTime < duration)
@@ -176,6 +176,14 @@ public class CubeInteraction : MonoBehaviour
             if (repairProgressBar != null)
             {
                 repairProgressBar.UpdateRepairProgress(repairProgress); // Update the slider
+            }
+
+            // Randomly check for crew member death during repair
+            if (Random.value < deathChance)
+            {
+                crewMember.Die();
+                StopRepair();
+                yield break; // Stop the repair process if the crew member dies
             }
 
             yield return null;
@@ -239,7 +247,6 @@ public class CubeInteraction : MonoBehaviour
                 return engineSystemController != null ? engineSystemController.engineHealth : 0f;
             case SystemType.Generator:
                 return generatorController != null ? generatorController.generatorHealth : 0f;
-            // Add cases for other systems
             default:
                 return 0f;
         }
@@ -255,7 +262,6 @@ public class CubeInteraction : MonoBehaviour
                 return engineSystemController != null ? engineSystemController.engineMaxHealth : 100f;
             case SystemType.Generator:
                 return generatorController != null ? generatorController.generatorMaxHealth : 100f;
-            // Add cases for other systems
             default:
                 return 100f;
         }
@@ -283,7 +289,6 @@ public class CubeInteraction : MonoBehaviour
                     generatorController.RepairGenerator(GetMaxSystemHealth());
                 }
                 break;
-            // Add cases for other systems
         }
     }
 
@@ -313,7 +318,21 @@ public class CubeInteraction : MonoBehaviour
                     Debug.Log("System " + systemType + " damaged. Current health: " + generatorController.generatorHealth);
                 }
                 break;
-            // Add cases for other systems
+        }
+    }
+
+    public float GetSystemHealth()
+    {
+        switch (systemType)
+        {
+            case SystemType.LifeSupport:
+                return lifeSupportController != null ? lifeSupportController.lifeSupportHealth : 0f;
+            case SystemType.Engines:
+                return engineSystemController != null ? engineSystemController.engineHealth : 0f;
+            case SystemType.Generator:
+                return generatorController != null ? generatorController.generatorHealth : 0f;
+            default:
+                return 0f;
         }
     }
 }

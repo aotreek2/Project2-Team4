@@ -18,6 +18,9 @@ public class EngineSystemController : MonoBehaviour
 
     void Start()
     {
+        // Ensure engine starts with maximum health
+        engineHealth = engineMaxHealth;
+
         if (engineFireParticles != null)
         {
             engineFireParticles.Stop();
@@ -27,20 +30,34 @@ public class EngineSystemController : MonoBehaviour
         {
             resourceManager = FindObjectOfType<ResourceManager>();
         }
+
+        Debug.Log($"Engine system initialized. Engine health: {engineHealth}/{engineMaxHealth}");
     }
 
     void Update()
     {
         UpdateEngineEfficiency();
+        
         if (isEngineOnFire)
         {
             UpdateFire();
+        }
+
+        // Log current engine health
+        Debug.Log($"Engine health: {engineHealth}");
+
+        // Add hotkey "L" to lower the engine health by 10 units for testing
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            DamageEngine(10f); // Damage the engine by 10 units
+            Debug.Log("Engine health reduced by 10 for testing purposes.");
         }
     }
 
     void UpdateEngineEfficiency()
     {
         engineEfficiency = Mathf.Clamp(engineHealth / engineMaxHealth, 0.1f, 1.0f);
+        Debug.Log($"Engine efficiency updated. Current efficiency: {engineEfficiency}");
 
         if (resourceManager != null)
         {
@@ -50,12 +67,22 @@ public class EngineSystemController : MonoBehaviour
 
     public void DamageEngine(float damage)
     {
-        engineHealth -= damage;
-        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
-
-        if (engineHealth <= engineMaxHealth * 0.5f && !isEngineOnFire)
+        if (engineHealth > 0)
         {
-            StartEngineFire();
+            engineHealth -= damage;
+            engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);  // Ensure it never goes below 0
+
+            Debug.Log($"Engine damaged by {damage}. New health: {engineHealth}");
+
+            // Only start fire if engine health is below 50% and no fire has started
+            if (engineHealth <= engineMaxHealth * 0.5f && !isEngineOnFire)
+            {
+                StartEngineFire();
+            }
+        }
+        else
+        {
+            Debug.Log("Engine is already at 0 health. Cannot reduce further.");
         }
     }
 
@@ -63,6 +90,8 @@ public class EngineSystemController : MonoBehaviour
     {
         engineHealth += amount;
         engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
+
+        Debug.Log($"Engine repaired by {amount}. New health: {engineHealth}");
 
         if (engineHealth == engineMaxHealth && isEngineOnFire)
         {
@@ -77,6 +106,7 @@ public class EngineSystemController : MonoBehaviour
             engineFireParticles.Play();
             isEngineOnFire = true;
             fireIntensity = 1.0f;
+            Debug.Log("Engine fire started!");
             InvokeRepeating("PropagateFire", 5f, 10f);
         }
     }
@@ -88,8 +118,30 @@ public class EngineSystemController : MonoBehaviour
             engineFireParticles.Stop();
             isEngineOnFire = false;
             fireIntensity = 0f;
+            Debug.Log("Engine fire stopped.");
             CancelInvoke("PropagateFire");
         }
+    }
+
+    public void AddFuel(float fuelAmount)
+    {
+        // Adding fuel increases engine health and boosts efficiency
+        engineHealth += fuelAmount;
+        engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
+
+        Debug.Log($"Fuel added: {fuelAmount}. New engine health: {engineHealth}");
+
+        if (engineHealth == engineMaxHealth)
+        {
+            Debug.Log("Engine fully fueled! Maximum health reached.");
+            
+            if (isEngineOnFire)
+            {
+                StopEngineFire(); // Stop the fire if the engine is fully repaired
+            }
+        }
+
+        UpdateEngineEfficiency(); // Recalculate efficiency based on the new health value
     }
 
     public void ReduceEngineEfficiency(float percentage)
@@ -98,6 +150,8 @@ public class EngineSystemController : MonoBehaviour
         engineHealth -= reduction;
         engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
 
+        Debug.Log($"Engine efficiency reduced by {percentage}%. New health: {engineHealth}");
+        
         UpdateEngineEfficiency();
     }
 
@@ -111,6 +165,8 @@ public class EngineSystemController : MonoBehaviour
                 float healthPercentage = engineHealth / engineMaxHealth;
                 Color healthColor = Color.Lerp(Color.red, Color.green, healthPercentage);
                 renderer.material.color = healthColor;
+
+                Debug.Log($"Engine cube color updated based on health: {healthPercentage * 100}%");
             }
         }
     }
@@ -139,10 +195,12 @@ public class EngineSystemController : MonoBehaviour
             if (system is EngineSystemController engineController)
             {
                 engineController.StartEngineFire();
+                Debug.Log("Fire spread to adjacent engine system.");
             }
             else if (system is HullSystemController hullController)
             {
                 hullController.StartHullFire();
+                Debug.Log("Fire spread to adjacent hull system.");
             }
         }
     }
@@ -162,10 +220,13 @@ public class EngineSystemController : MonoBehaviour
         engineHealth -= damageAmount;
         engineHealth = Mathf.Clamp(engineHealth, 0f, engineMaxHealth);
 
+        Debug.Log($"Engine took {damageAmount} fire damage. New health: {engineHealth}");
+
         if (engineHealth <= 0)
         {
             engineHealth = 0;
             StopEngineFire();
+            Debug.Log("Engine health has reached 0. Fire stopped.");
         }
     }
 }

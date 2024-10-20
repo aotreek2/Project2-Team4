@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 using System.Collections;
 using TMPro;
 
@@ -18,19 +17,19 @@ public class CameraController : MonoBehaviour
     public float maxYAngle = 45f;         // Maximum vertical angle when zoomed out
     private float currentYAngle;          // Current vertical angle
 
-    private float currentXAngle = 0f;     // Current horizontal angle (added for Q and E rotation)
+    private float currentXAngle = 0f;     // Current horizontal angle
 
     // Movement variables
     public float moveSpeed = 10f;         // Speed of camera movement (WASD and mouse drag)
     public float rotationSpeed = 100f;    // Speed of rotation when using Q and E keys
-    public float zoomSpeed = 10f;         // Increased zoom speed
-    public float zoomDampening = 10f;     // Increased zoom damping
+    public float zoomSpeed = 10f;         // Zoom speed
+    public float zoomDampening = 10f;     // Zoom damping
 
     // Internal variables
     private Vector3 pivotPoint;           // The point the camera orbits around
 
     // First-person mode variables
-    public bool isInFirstPerson = false; // Changed to public
+    public bool isInFirstPerson = false;
     private CrewMember controlledCrewMember;
     private Transform mainCameraTransform;
 
@@ -57,10 +56,10 @@ public class CameraController : MonoBehaviour
         // Initialize distances and angles
         currentDistance = desiredDistance = initialDistance;
         currentYAngle = initialYAngle;
-        currentXAngle = 0f; // Start with no horizontal rotation
+        currentXAngle = 0f;
 
         // Set the initial pivot point (e.g., spaceship position or scene center)
-        pivotPoint = Vector3.zero; // You can set this to your spaceship's position if needed
+        pivotPoint = Vector3.zero;
 
         // Position the camera
         UpdateCameraPosition();
@@ -72,15 +71,14 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    // This is the single LateUpdate method that manages the camera logic
     void LateUpdate()
     {
-        // Handle zoom input (always process zoom input)
+        // Always handle zoom input
         HandleZoomInput();
 
         if (isInFirstPerson)
         {
-            // Skip further camera movement and rotation constraints in first-person mode
+            // In first-person mode, ensure third-person camera updates are skipped
             return;
         }
 
@@ -145,6 +143,9 @@ public class CameraController : MonoBehaviour
 
     void UpdateCameraPosition()
     {
+        if (isInFirstPerson)
+            return; // Skip updating camera position in first-person mode
+
         Quaternion rotation = Quaternion.Euler(currentYAngle, currentXAngle, 0);
         Vector3 negDistance = new Vector3(0.0f, 0.0f, -currentDistance);
         Vector3 position = rotation * negDistance;
@@ -160,7 +161,9 @@ public class CameraController : MonoBehaviour
 
     void HandleCrewMemberSelection()
     {
-        // Use desiredDistance instead of currentDistance and adjust the threshold
+        if (isInFirstPerson)
+            return; // Skip crew member selection in first-person mode
+
         bool canEnterFirstPerson = false;
 
         if (desiredDistance <= minDistance + 0.5f)
@@ -212,17 +215,12 @@ public class CameraController : MonoBehaviour
         Transform cameraPosition = crewMember.transform.Find("CameraPosition");
         if (cameraPosition != null)
         {
-            // Make sure the CameraPosition local transform remains intact
+            // Ensure the CameraPosition local transform remains intact
             cameraPosition.localPosition = Vector3.zero;
+            cameraPosition.localRotation = Quaternion.identity;
 
             // Set the camera's position and rotation before parenting to prevent sudden jumps
-            mainCameraTransform.position = cameraPosition.position;
-            mainCameraTransform.rotation = cameraPosition.rotation;
-
-            // Parent the camera to the CameraPosition transform
             mainCameraTransform.SetParent(cameraPosition);
-
-            // Reset the camera's local position and rotation
             mainCameraTransform.localPosition = Vector3.zero;
             mainCameraTransform.localRotation = Quaternion.identity;
         }
@@ -232,6 +230,9 @@ public class CameraController : MonoBehaviour
             isInFirstPerson = false;
             return;
         }
+
+        // Disable the camera controller movement and rotation to prevent interference
+        enabled = false;
 
         // Enable the FirstPersonController script
         FirstPersonController fpController = controlledCrewMember.GetComponent<FirstPersonController>();
@@ -289,9 +290,6 @@ public class CameraController : MonoBehaviour
         Vector3 targetPosition = transform.position + rotation * negDistance;
         Quaternion targetRotation = rotation;
 
-        // Disable camera controller movement during transition
-        enabled = false;
-
         // Smoothly interpolate the camera's position and rotation
         while (elapsedTime < transitionDuration)
         {
@@ -317,29 +315,37 @@ public class CameraController : MonoBehaviour
         enabled = true;
     }
 
-    // Corrected DoFirstPersonCameraShake method
+    // Updated DoFirstPersonCameraShake method with improved shake
     private IEnumerator DoFirstPersonCameraShake(float duration, float magnitude)
     {
         Transform cameraTransform = mainCameraTransform;
-
         Vector3 originalLocalPosition = cameraTransform.localPosition;
+
         float elapsed = 0.0f;
 
+        // Loop over the shake duration
         while (elapsed < duration)
         {
-            float x = Random.Range(-1f, 1f) * magnitude * 0.1f;
-            float y = Random.Range(-1f, 1f) * magnitude * 0.1f;
+            // Reduce intensity over time for a damping effect
+            float currentMagnitude = Mathf.Lerp(magnitude, 0, elapsed / duration);
 
-            cameraTransform.localPosition = originalLocalPosition + new Vector3(x, y, 0);
+            // Use Perlin noise for smooth transitions between shake points
+            float x = (Mathf.PerlinNoise(Time.time * 2, 0) - 0.5f) * currentMagnitude;
+            float y = (Mathf.PerlinNoise(0, Time.time * 2) - 0.5f) * currentMagnitude;
+            float z = (Mathf.PerlinNoise(Time.time * 2, Time.time * 2) - 0.5f) * currentMagnitude * 0.2f;
+
+            // Apply shake to the camera
+            cameraTransform.localPosition = originalLocalPosition + new Vector3(x, y, z);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
+        // Reset camera to its original position
         cameraTransform.localPosition = originalLocalPosition;
     }
 
-    // Added DoCameraShake method
+    // Updated DoCameraShake method
     private IEnumerator DoCameraShake(float duration, float magnitude)
     {
         Transform cameraTransform = mainCameraTransform;
@@ -361,7 +367,7 @@ public class CameraController : MonoBehaviour
         cameraTransform.localPosition = originalPosition;
     }
 
-    // Corrected ShakeCamera method
+    // Updated ShakeCamera method
     public void ShakeCamera(float duration, float magnitude)
     {
         if (isInFirstPerson)
