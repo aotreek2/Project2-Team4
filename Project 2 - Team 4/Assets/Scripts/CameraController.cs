@@ -72,6 +72,7 @@ public class CameraController : MonoBehaviour
         }
     }
 
+  
     // This is the single LateUpdate method that manages the camera logic
     void LateUpdate()
     {
@@ -88,6 +89,7 @@ public class CameraController : MonoBehaviour
         HandleCameraMovement();
         UpdateCameraPosition();
         HandleCrewMemberSelection();
+
     }
 
     void HandleZoomInput()
@@ -209,22 +211,21 @@ public class CameraController : MonoBehaviour
         originalCameraRotation = mainCameraTransform.rotation;
 
         // Parent the main camera to the crew member's CameraPosition transform
-        Transform cameraPosition = crewMember.transform.Find("CameraPosition");
+        Transform cameraPosition = crewMember.transform.GetChild(0);
+        Debug.Log(cameraPosition.gameObject.name);
         if (cameraPosition != null)
         {
+            
             // Make sure the CameraPosition local transform remains intact
             cameraPosition.localPosition = Vector3.zero;
-
-            // Set the camera's position and rotation before parenting to prevent sudden jumps
-            mainCameraTransform.position = cameraPosition.position;
-            mainCameraTransform.rotation = cameraPosition.rotation;
 
             // Parent the camera to the CameraPosition transform
             mainCameraTransform.SetParent(cameraPosition);
 
-            // Reset the camera's local position and rotation
-            mainCameraTransform.localPosition = Vector3.zero;
-            mainCameraTransform.localRotation = Quaternion.identity;
+            // Set the camera's position and rotation before parenting to prevent sudden jumps
+
+            mainCameraTransform.position = cameraPosition.position;
+            mainCameraTransform.rotation = cameraPosition.rotation;
         }
         else
         {
@@ -366,7 +367,7 @@ public class CameraController : MonoBehaviour
     {
         if (isInFirstPerson)
         {
-            StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
+            //StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
         }
         else
         {
