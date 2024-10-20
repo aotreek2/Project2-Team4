@@ -498,7 +498,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -7.5, y: 18.148193}
+  m_AnchoredPosition: {x: -7.5, y: 24.65}
   m_SizeDelta: {x: 2560, y: 1440}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &22403374
@@ -3900,7 +3900,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 6
   m_TargetDisplay: 0
 --- !u!224 &250070974
 RectTransform:
@@ -17043,11 +17043,11 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
-  m_LayerOverridePriority: 10
+    m_Bits: 0
+  m_LayerOverridePriority: 5
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -17091,7 +17091,7 @@ MonoBehaviour:
   crewType: 1
   crewName: Engineer 1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -17108,7 +17108,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &774986779
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -22927,7 +22927,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1717078976}
-  - {fileID: 1219066163}
   m_Father: {fileID: 1743883292}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -23421,6 +23420,7 @@ GameObject:
   - component: {fileID: 852831804}
   - component: {fileID: 852831807}
   - component: {fileID: 852831806}
+  - component: {fileID: 852831808}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -23735,6 +23735,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &852831808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 852831798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edfd00208aeae0b4ebf6137ec5524310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &853404155
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28543,7 +28555,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 32.6}
+  m_AnchoredPosition: {x: 0, y: 36.1}
   m_SizeDelta: {x: 2560, y: 1440}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1196069054
@@ -28812,12 +28824,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1219066162}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0.0000014007088}
-  m_LocalPosition: {x: 242.13884, y: -1398, z: -153.84631}
-  m_LocalScale: {x: 7.749044, y: 32.528297, z: 11.346361}
+  m_LocalRotation: {x: 0, y: -0.00042366973, z: -0, w: -0.9999999}
+  m_LocalPosition: {x: -725.0008, y: 414.76755, z: -1.9998854}
+  m_LocalScale: {x: 15.5936, y: 65.45756, z: 22.832575}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 826134425}
+  m_Father: {fileID: 1743883292}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1219066164
 BoxCollider:
@@ -29503,7 +29515,7 @@ MonoBehaviour:
   crewType: 1
   crewName: Engineer 1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -29520,7 +29532,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1286740632
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -30662,16 +30674,16 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 10
+  m_Radius: 5
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!195 &1317708635
 NavMeshAgent:
@@ -30710,7 +30722,7 @@ MonoBehaviour:
   crewType: 0
   crewName: crew1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -30727,7 +30739,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1317708637
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -33233,7 +33245,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 2
+  m_Radius: 5
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!195 &1452440854
 NavMeshAgent:
@@ -33272,7 +33284,7 @@ MonoBehaviour:
   crewType: 1
   crewName: Engineer 1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -33289,7 +33301,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1452440856
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -34235,6 +34247,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1494198422}
+    - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1494198423}
   m_SourcePrefab: {fileID: 100100000, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
 --- !u!1 &1494198413 stripped
 GameObject:
@@ -34275,8 +34290,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 0
   repairProgressBar: {fileID: 801844853}
-  repairZone: {fileID: 2041565341}
+  repairPoint: {fileID: 2041565342}
   baseRepairDuration: 10
+  baseDeathChanceMultiplier: 0.05
+  dialogueManager: {fileID: 2130366117}
 --- !u!65 &1494198416
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34360,6 +34377,27 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!65 &1494198423
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494198413}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 10, y: 20, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!198 &1505787992 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 6430079752750172880, guid: 1b6c78e394bb8e04c89a4e04e791c716, type: 3}
@@ -35188,16 +35226,16 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
-  m_LayerOverridePriority: 10
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 2
+  m_Radius: 5
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!195 &1578948014
 NavMeshAgent:
@@ -35236,7 +35274,7 @@ MonoBehaviour:
   crewType: 1
   crewName: Engineer 1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -35253,7 +35291,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1578948016
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -42698,7 +42736,7 @@ MonoBehaviour:
   crewType: 0
   crewName: crew1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -42715,7 +42753,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1732459349
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -43238,6 +43276,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 826134425}
+    - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1219066163}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5947132192605814783, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
@@ -43321,8 +43362,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 1
   repairProgressBar: {fileID: 1717078977}
-  repairZone: {fileID: 1219066164}
+  repairPoint: {fileID: 1219066163}
   baseRepairDuration: 10
+  baseDeathChanceMultiplier: 0.05
+  dialogueManager: {fileID: 2130366117}
 --- !u!23 &1743883300
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -43590,8 +43633,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 3
   repairProgressBar: {fileID: 27460723}
-  repairZone: {fileID: 1049161634}
+  repairPoint: {fileID: 1049161633}
   baseRepairDuration: 10
+  baseDeathChanceMultiplier: 0.05
+  dialogueManager: {fileID: 2130366117}
 --- !u!114 &1747077189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45960,7 +46005,7 @@ MonoBehaviour:
   crewType: 1
   crewName: Engineer 1
   morale: 100
-  taskEfficiency: 1
+  efficiency: 1
   health: 100
   fatigue: 0
   isDead: 0
@@ -45977,7 +46022,7 @@ MonoBehaviour:
   panicSpeed: 6
   normalAcceleration: 8
   panicAcceleration: 12
-  biomassFuelAmount: 10
+  repairStartThreshold: 0.5
 --- !u!54 &1925451648
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -47613,7 +47658,7 @@ Transform:
   m_GameObject: {fileID: 2041565341}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0.0000014305114}
-  m_LocalPosition: {x: -69, y: -881.0468, z: -337}
+  m_LocalPosition: {x: -32, y: -1274, z: -337}
   m_LocalScale: {x: 28.23829, y: 22.478033, z: 9.204001}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -48227,8 +48272,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 2
   repairProgressBar: {fileID: 0}
-  repairZone: {fileID: 0}
+  repairPoint: {fileID: 0}
   baseRepairDuration: 10
+  baseDeathChanceMultiplier: 0.05
+  dialogueManager: {fileID: 0}
 --- !u!65 &2087564738
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -49027,6 +49074,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogueCanvasGroup: {fileID: 2130366112}
   dialoguePanel: {fileID: 133757969}
+  dialogueBackgroundImage: {fileID: 0}
   dialogueText: {fileID: 140907779}
   continueText: {fileID: 554199163}
   systemHealthText: {fileID: 2016492298}
@@ -49037,7 +49085,7 @@ MonoBehaviour:
   showHistoryButton: {fileID: 212234192}
   closeHistoryButton: {fileID: 143842997}
   typingSpeed: 0.05
-  moveDuration: 2
+  fadeDuration: 0.5
 --- !u!1001 &2137128329
 PrefabInstance:
   m_ObjectHideFlags: 0

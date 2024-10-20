@@ -54,6 +54,15 @@ public class RepairProgressBar : MonoBehaviour
         repairSlider.value = progress;
     }
 
+    public void ResetProgress()
+    {
+        // Reset the slider value to 0
+        if (repairSlider != null)
+        {
+            repairSlider.value = 0f;
+        }
+    }
+
     void AlignWithSystem()
     {
         // Adjust the position of the repair bar to hover above the system

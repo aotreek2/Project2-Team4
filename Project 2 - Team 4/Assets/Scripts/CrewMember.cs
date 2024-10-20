@@ -8,20 +8,19 @@ public class CrewMember : MonoBehaviour
 
     public string crewName;
     public float morale = 100f; // Crew morale
-    public float taskEfficiency = 1f; // Task efficiency affects repair speed
+    public float efficiency = 1f; // Task efficiency affects repair speed
     public float health = 100f; // Crew health
     public float fatigue = 0f; // Fatigue level
 
     public bool isDead = false; // Track if the crew member is dead
-    private bool isSacrificed = false; // Track if crew member was sacrificed
 
-    public enum Task { Idle, RepairEngines, RepairLifeSupport, RepairHull, RepairGenerator, Wander, Sacrificed, Dead } // Added Dead task
+    public enum Task { Idle, RepairEngines, RepairLifeSupport, RepairHull, RepairGenerator, Wander, Dead }
     public Task currentTask = Task.Idle;
 
     private NavMeshAgent navAgent;
     private bool isPerformingTask = false;
-    private bool isInsideRepairZone = false;
     private CubeInteraction currentCubeInteraction; // Reference to the system being repaired
+    private Transform currentRepairPoint; // Current target repair point
 
     public Renderer crewRenderer;
     public AudioSource walkingSFX, selectedSFX, assignedSFX, deathSFX;
@@ -38,36 +37,63 @@ public class CrewMember : MonoBehaviour
     public float normalAcceleration = 8f;
     public float panicAcceleration = 12f;
 
-    // Reference to ShipController for sacrifice mechanics
+    // Reference to ShipController for any ship-wide mechanics
     private ShipController shipController;
 
-    // Rigidbody reference for first-person control mode
+    // Rigidbody reference for physics interactions
     private Rigidbody rb;
 
-    // Amount of biomass fuel added when sacrificed
-    public float biomassFuelAmount = 10f; // Set to a default value or adjust as necessary
+    // Threshold distance to start repair
+    public float repairStartThreshold = 0.5f; // Adjust as needed
 
     void Start()
     {
+        // Initialize NavMeshAgent
         navAgent = GetComponent<NavMeshAgent>();
+        if (navAgent == null)
+        {
+            Debug.LogError("NavMeshAgent component missing from crew member: " + crewName);
+        }
+        else
+        {
+            navAgent.speed = normalSpeed;
+            navAgent.acceleration = normalAcceleration;
+        }
 
-        // Initialize navAgent speed and acceleration
-        navAgent.speed = normalSpeed;
-        navAgent.acceleration = normalAcceleration;
-
-        // Find the ShipController in the scene
-        shipController = FindObjectOfType<ShipController>();
-
-        // Randomize initial wait time counter
-        waitTimeCounter = Random.Range(0f, maxWaitTime);
-
-        // Get the Rigidbody component
+        // Initialize Rigidbody
         rb = GetComponent<Rigidbody>();
-    }
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+        }
 
+        // Find ShipController in the scene
+        shipController = FindObjectOfType<ShipController>();
+        if (shipController == null)
+        {
+            Debug.LogError("ShipController not found in the scene.");
+        }
+
+        // Initialize AudioSources
+        if (walkingSFX == null || selectedSFX == null || assignedSFX == null || deathSFX == null)
+        {
+            Debug.LogWarning("One or more AudioSources are not assigned on " + crewName);
+        }
+
+        // Initialize Renderer
+        if (crewRenderer == null)
+        {
+            crewRenderer = GetComponent<Renderer>();
+            if (crewRenderer == null)
+            {
+                Debug.LogError("Renderer component missing from crew member: " + crewName);
+            }
+        }
+    }
     void Update()
     {
-        if (isDead || isSacrificed) return; // Skip update logic if dead or sacrificed
+        if (isDead) return; // Skip update logic if dead
 
         // Check for ship's critical condition and adjust behavior
         if (shipController != null && shipController.IsCriticalCondition())
@@ -97,9 +123,14 @@ public class CrewMember : MonoBehaviour
             }
         }
 
-        if (isInsideRepairZone && !isPerformingTask)
+        // Check if the crew member has reached the repair point to start repair
+        if (currentTask != Task.Idle && currentRepairPoint != null && !isPerformingTask)
         {
-            PerformRepairTask();
+            float distance = Vector3.Distance(transform.position, currentRepairPoint.position);
+            if (distance <= repairStartThreshold)
+            {
+                StartRepair();
+            }
         }
 
         // Check for death
@@ -108,102 +139,74 @@ public class CrewMember : MonoBehaviour
             Die();
         }
 
-        // Press "D" to simulate death for testing purposes
+        // Press "K" to simulate death for testing purposes
         if (Input.GetKeyDown(KeyCode.K))
         {
             Die();
         }
     }
 
-    public void Die()
+    // Assign the crew member to a repair system
+    public void AssignToRepairPoint(CubeInteraction cubeInteraction)
     {
-        if (isDead) return;
+        if (currentCubeInteraction != null)
+        {
+            Debug.LogWarning($"Crew member {crewName} is already assigned to a repair task.");
+            return;
+        }
 
-        isDead = true;
-        currentTask = Task.Dead;  // Set task to Dead state
-        navAgent.isStopped = true;  // Stop all movement
-        navAgent.enabled = false;   // Disable the NavMeshAgent to prevent sliding
+        currentCubeInteraction = cubeInteraction;
+        currentRepairPoint = cubeInteraction.repairPoint;
 
-        // Play death sound if available
-        if (deathSFX != null) deathSFX.Play();
+        currentTask = DetermineTaskType(cubeInteraction.systemType);
 
-        // Lower crew member to the ground and rotate them to simulate falling over
-        transform.position += new Vector3(0, -1f, 0);  // Lower the crew member by 2 units on Y-axis
-        transform.Rotate(new Vector3(-90, 0, 0));  // Rotate to simulate falling on their side
+        if (navAgent != null && currentRepairPoint != null)
+        {
+            navAgent.SetDestination(currentRepairPoint.position);
+            navAgent.isStopped = false;
+            if (walkingSFX != null && !walkingSFX.isPlaying)
+            {
+                walkingSFX.Play();
+            }
 
-        // Set Rigidbody settings for staying on the ground
-        rb.isKinematic = false;
-        rb.useGravity = true;
+            // Change the crew member's color to indicate assignment
+            if (crewRenderer != null)
+            {
+                crewRenderer.material.color = Color.yellow;
+            }
 
-        // Make sure they stay on the ground without sliding
-        rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
-
-        // Remove any code that destroys the object
-        // (We do not want the crew member to disappear over time)
+            // Optional: Add a debug log to confirm assignment
+            Debug.Log($"Crew member {crewName} assigned to system: {cubeInteraction.systemType}");
+        }
     }
 
-
-
-    public void Sacrifice()
+    private Task DetermineTaskType(CubeInteraction.SystemType systemType)
     {
-        if (isSacrificed || isDead) return; // Skip if already sacrificed or dead
+        switch (systemType)
+        {
+            case CubeInteraction.SystemType.LifeSupport:
+                return Task.RepairLifeSupport;
+            case CubeInteraction.SystemType.Engines:
+                return Task.RepairEngines;
+            case CubeInteraction.SystemType.Hull:
+                return Task.RepairHull;
+            case CubeInteraction.SystemType.Generator:
+                return Task.RepairGenerator;
+            default:
+                return Task.Idle;
+        }
+    }
 
-        isSacrificed = true;
-        currentTask = Task.Sacrificed;
+    private void StartRepair()
+    {
+        if (isPerformingTask || currentCubeInteraction == null)
+            return;
 
-        // Add biomass fuel to the engine system directly
-        shipController.AddBiomassFuel(biomassFuelAmount);
-
-        // Animate or display visual feedback if needed
+        isPerformingTask = true;
         navAgent.isStopped = true;
 
-        Destroy(gameObject, 3f); // Destroy the crew member after sacrifice
-    }
-
-    // Trigger for the repair zone
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Generator") && !isSacrificed)
-        {
-            Sacrifice();
-        }
-
-        if (other.CompareTag("RepairZone"))
-        {
-            isInsideRepairZone = true;
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("RepairZone"))
-        {
-            isInsideRepairZone = false;
-        }
-    }
-
-    public void PerformRepairTask()
-    {
-        if (currentCubeInteraction != null && !isPerformingTask)
-        {
-            isPerformingTask = true;
-            navAgent.isStopped = true;
-
-            // Calculate the death chance based on system health
-            float systemHealth = currentCubeInteraction.GetSystemHealth(); // Assume this method exists
-            float deathChance = Mathf.Clamp(1 - (systemHealth / 100f), 0f, 0.5f); // e.g., at 50% system health, there's a 50% death chance
-
-            // Check if the crew member dies during the task
-            if (Random.value < deathChance)
-            {
-                Die();
-            }
-            else
-            {
-                // Continue the repair task
-                currentCubeInteraction.StartRepair(this, taskEfficiency);
-            }
-        }
+        // Start the repair process via CubeInteraction
+        currentCubeInteraction.StartRepair(this, efficiency);
     }
 
     public void CompleteTask()
@@ -211,55 +214,14 @@ public class CrewMember : MonoBehaviour
         isPerformingTask = false;
         currentTask = Task.Idle;
         navAgent.isStopped = false;
-    }
+        currentCubeInteraction = null;
+        currentRepairPoint = null;
 
-    void HighlightSelection(bool isHighlighted)
-    {
+        // Reset the crew member's color after completing the task
         if (crewRenderer != null)
         {
-            crewRenderer.material.color = isHighlighted ? Color.yellow : Color.white;
+            crewRenderer.material.color = Color.white;
         }
-    }
-
-    public void Select()
-    {
-        HighlightSelection(true);
-        if (selectedSFX != null) selectedSFX.Play();
-    }
-
-    public void Deselect()
-    {
-        HighlightSelection(false);
-    }
-
-    public void AssignToSystem(CubeInteraction system)
-    {
-        currentCubeInteraction = system;
-
-        switch (system.systemType)
-        {
-            case CubeInteraction.SystemType.Engines:
-                currentTask = Task.RepairEngines;
-                break;
-            case CubeInteraction.SystemType.LifeSupport:
-                currentTask = Task.RepairLifeSupport;
-                break;
-            case CubeInteraction.SystemType.Hull:
-                currentTask = Task.RepairHull;
-                break;
-            case CubeInteraction.SystemType.Generator:
-                currentTask = Task.RepairGenerator;
-                break;
-        }
-
-        if (navAgent != null)
-        {
-            navAgent.SetDestination(system.repairZone.transform.position);
-            navAgent.isStopped = false;
-            if (walkingSFX != null) walkingSFX.Play();
-        }
-
-        Deselect();
     }
 
     void Wander()
@@ -335,5 +297,46 @@ public class CrewMember : MonoBehaviour
     {
         currentTask = Task.Idle;
         fatigue = Mathf.Clamp(fatigue - (Time.deltaTime * 10f), 0, 100);
+    }
+
+    public void Select()
+    {
+        // Highlight the crew member when selected
+        if (crewRenderer != null)
+        {
+            crewRenderer.material.color = Color.green;
+        }
+    }
+
+    public void Deselect()
+    {
+        // Reset the crew member's appearance when deselected
+        if (crewRenderer != null)
+        {
+            crewRenderer.material.color = Color.white;
+        }
+    }
+
+    public void Die()
+    {
+        if (isDead) return;
+
+        isDead = true;
+        currentTask = Task.Dead;  // Set task to Dead state
+        navAgent.isStopped = true;  // Stop all movement
+        navAgent.enabled = false;   // Disable the NavMeshAgent to prevent sliding
+
+        // Play death sound if available
+        if (deathSFX != null) deathSFX.Play();
+
+        // Play a death animation if available
+        Animator animator = GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.SetTrigger("Die");
+        }
+
+        // Optionally, destroy the crew member after a delay
+        Destroy(gameObject, 5f); // Adjust the delay as needed
     }
 }
