@@ -19,6 +19,7 @@ public class ShipController : MonoBehaviour
     public EngineSystemController engineSystemController;
     public CameraController cameraController; // Reference to CameraController
     public DecisionController decisionController; // Reference to the DecisionController
+    public ChapterManager chapterManager;
 
     // Ship health variables
     private float shipHealth = 100f;
@@ -46,6 +47,8 @@ public class ShipController : MonoBehaviour
 
         // Initialize cubes' colors
         UpdateSystemCubes();
+
+        chapterManager = chapterManager ?? FindObjectOfType<ChapterManager>();
     }
 
     void Update()
@@ -248,19 +251,33 @@ public class ShipController : MonoBehaviour
             // Trigger decision panel when health is critically low, but not zero
             if (engineSystemController.engineHealth <= engineSystemController.engineMaxHealth * 0.3f && engineSystemController.engineHealth > 0)
             {
-                decisionController.ShowDecision(
+                if (chapterManager.currentChapter == ChapterManager.Chapter.Chapter1)
+                {
+                    return;
+                }
+                else
+                {
+                    decisionController.ShowDecision(
                     "The engine is critically damaged! Sacrifice 3 crew members to repair the engine?",
                     () => SacrificeCrewForRepair(3, CubeInteraction.SystemType.Engines),
                     null
                 );
+              }
             }
             else if (engineSystemController.engineHealth == 0)
             {
-                decisionController.ShowDecision(
+                if(chapterManager.currentChapter == ChapterManager.Chapter.Chapter1)
+                {
+                    return;
+                }
+                else
+                {
+                    decisionController.ShowDecision(
                     "The engine has completely failed! Sacrifice 5 crew members to restart the engine?",
                     () => SacrificeCrewForRepair(5, CubeInteraction.SystemType.Engines),
                     null
                 );
+                }
             }
         }
     }

@@ -28,6 +28,7 @@ public class SelectionManager : MonoBehaviour
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
+            Debug.DrawRay(ray.origin, ray.direction * 100, Color.green);
 
             // Raycast to detect crew members based on their colliders
             if (Physics.Raycast(ray, out hit, 100f, crewLayer))
@@ -46,6 +47,7 @@ public class SelectionManager : MonoBehaviour
                     selectedCrewMember.Select();
 
                     Debug.Log("Selected crew member: " + selectedCrewMember.crewName);
+                    Debug.Log("Selected crew member: " + selectedCrewMember.gameObject.name);
                 }
             }
             else

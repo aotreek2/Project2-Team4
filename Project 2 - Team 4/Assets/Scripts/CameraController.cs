@@ -212,7 +212,7 @@ public class CameraController : MonoBehaviour
         originalCameraRotation = mainCameraTransform.rotation;
 
         // Parent the main camera to the crew member's CameraPosition transform
-        Transform cameraPosition = crewMember.transform.Find("CameraPosition");
+        Transform cameraPosition = crewMember.transform.GetChild(0);
         if (cameraPosition != null)
         {
             // Ensure the CameraPosition local transform remains intact
@@ -372,7 +372,7 @@ public class CameraController : MonoBehaviour
     {
         if (isInFirstPerson)
         {
-            StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
+            //StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
         }
         else
         {

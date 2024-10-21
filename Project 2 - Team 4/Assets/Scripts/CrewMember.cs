@@ -335,7 +335,7 @@ public class CrewMember : MonoBehaviour
         {
             animator.SetTrigger("Die");
         }
-
+        Deselect();
         // Optionally, destroy the crew member after a delay
         Destroy(gameObject, 5f); // Adjust the delay as needed
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class ChapterManager : MonoBehaviour
 {
@@ -17,8 +18,12 @@ public class ChapterManager : MonoBehaviour
     public float initialEngineDamage = 60f; // Engine starts at 60% health
     public float initialHullDamage = 70f; // Hull starts at 70% health
 
+    private Scene scene;
+    public Animator crossFade;
     void Start()
     {
+        scene = SceneManager.GetActiveScene();
+
         if (shipController == null)
             shipController = FindObjectOfType<ShipController>();
 
@@ -39,11 +44,31 @@ public class ChapterManager : MonoBehaviour
 
     private IEnumerator StartChapterSequence()
     {
-        yield return StartCoroutine(ChapterOne());
-        yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
-        yield return StartCoroutine(ChapterTwo());
-        yield return StartCoroutine(ChapterThree());
-        yield return StartCoroutine(ChapterFour());
+        if(scene.name == "Chapter 1")
+        {
+            yield return StartCoroutine(ChapterOne());
+            yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
+            LoadNextLevel();
+
+        }
+        else if(scene.name == "Chapter 2")
+        {
+            yield return StartCoroutine(ChapterTwo());
+            LoadNextLevel();
+
+        }
+        else if (scene.name == "Chapter 3")
+        {
+            yield return StartCoroutine(ChapterThree());
+            LoadNextLevel();
+
+        }
+        else if (scene.name == "Chapter 4")
+        {
+            yield return StartCoroutine(ChapterFour());
+
+        }
+        
     }
 
     private IEnumerator ChapterOne()
@@ -163,5 +188,18 @@ public class ChapterManager : MonoBehaviour
         yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
 
         // End the game or start a new journey based on the decision
+    }
+
+    private void LoadNextLevel()
+    {
+        StartCoroutine(LevelAnimation(SceneManager.GetActiveScene().buildIndex + 1));
+    }
+
+    private IEnumerator LevelAnimation(int index)
+    {
+        crossFade.SetTrigger("start");
+        yield return new WaitForSeconds(2.0f);
+
+        SceneManager.LoadScene(index);
     }
 }
