@@ -48,19 +48,16 @@ public class ChapterManager : MonoBehaviour
         {
             yield return StartCoroutine(ChapterOne());
             yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
-            LoadNextLevel();
 
         }
         else if(scene.name == "Chapter 2")
         {
             yield return StartCoroutine(ChapterTwo());
-            LoadNextLevel();
 
         }
         else if (scene.name == "Chapter 3")
         {
             yield return StartCoroutine(ChapterThree());
-            LoadNextLevel();
 
         }
         else if (scene.name == "Chapter 4")
@@ -120,6 +117,7 @@ public class ChapterManager : MonoBehaviour
         );
 
         // Stop highlighting once systems are repaired
+        LoadNextLevel();
         systemHighlighter.StopHighlighting(shipController.lifeSupportController.gameObject);
         systemHighlighter.StopHighlighting(shipController.engineSystemController.gameObject);
         systemHighlighter.StopHighlighting(shipController.hullSystemController.gameObject);
@@ -190,7 +188,7 @@ public class ChapterManager : MonoBehaviour
         // End the game or start a new journey based on the decision
     }
 
-    private void LoadNextLevel()
+    public void LoadNextLevel()
     {
         StartCoroutine(LevelAnimation(SceneManager.GetActiveScene().buildIndex + 1));
     }

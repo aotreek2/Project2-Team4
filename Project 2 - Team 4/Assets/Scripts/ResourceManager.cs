@@ -34,6 +34,7 @@ public class ResourceManager : MonoBehaviour
     // References to Controllers
     public ShipController shipController;
     public LifeSupportController lifeSupportController;
+    public ChapterManager chapterManager;
 
     // New variable to control if systems are active
     public bool systemsActive = true;
@@ -118,7 +119,7 @@ public class ResourceManager : MonoBehaviour
 
         if (distanceToLighthouse <= 0f)
         {
-            Debug.Log("Congratulations! You've reached the Lighthouse.");
+            chapterManager.LoadNextLevel();
         }
     }
 

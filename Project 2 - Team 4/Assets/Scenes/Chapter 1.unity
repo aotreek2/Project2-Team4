@@ -23665,6 +23665,7 @@ MonoBehaviour:
   moraleText: {fileID: 0}
   shipController: {fileID: 852831804}
   lifeSupportController: {fileID: 1494198414}
+  chapterManager: {fileID: 250070970}
   systemsActive: 1
 --- !u!114 &852831801
 MonoBehaviour:
