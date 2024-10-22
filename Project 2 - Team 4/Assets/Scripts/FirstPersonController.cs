@@ -54,8 +54,6 @@ public class FirstPersonController : MonoBehaviour
         verticalRotation -= mouseY;
         verticalRotation = Mathf.Clamp(verticalRotation, -90f, 90f);
 
-        cameraTransform.localPosition = new Vector3(0, 0, 0);
-        cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
 
         // Movement

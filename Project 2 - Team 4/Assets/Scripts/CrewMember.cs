@@ -29,6 +29,7 @@ public class CrewMember : MonoBehaviour
     public Renderer crewRenderer;
     public AudioSource walkingSFX, selectedSFX, assignedSFX, deathSFX;
 
+    public Transform fpsCameraPos;
     // Variables for wandering behavior
     public float wanderRadius = 10f; // Radius within which the crewmember can wander
     public float minWaitTime = 0f;   // Minimum time to wait before moving again

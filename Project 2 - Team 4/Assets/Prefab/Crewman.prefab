@@ -949,6 +949,8 @@ GameObject:
   - component: {fileID: 2487158309963790399}
   - component: {fileID: 8988523425850227513}
   - component: {fileID: 4528927483186323688}
+  - component: {fileID: 737231958980959328}
+  - component: {fileID: -1054508341563325826}
   m_Layer: 8
   m_Name: Crewman
   m_TagString: Untagged
@@ -976,6 +978,7 @@ Transform:
   - {fileID: 3413829832352990211}
   - {fileID: 1464921907427906750}
   - {fileID: 468362086902475721}
+  - {fileID: 6596665375440218195}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &8506666576513726865
@@ -1041,8 +1044,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 363.81912
-  m_Center: {x: -0.7516384, y: 82.54213, z: 10.544205}
+  m_Radius: 536.7231
+  m_Center: {x: -15.353107, y: 82.54208, z: 10.544205}
 --- !u!114 &4342801497370454460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1069,6 +1072,7 @@ MonoBehaviour:
   selectedSFX: {fileID: 2487158309963790399}
   assignedSFX: {fileID: 8988523425850227513}
   deathSFX: {fileID: 4528927483186323688}
+  fpsCameraPos: {fileID: 0}
   wanderRadius: 10
   minWaitTime: 0
   maxWaitTime: 2
@@ -1086,7 +1090,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 3455344859972165280}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 4
+  m_Radius: 3.5
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -1240,7 +1244,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 61
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
@@ -1426,7 +1430,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 0f3840bfc0674a0449aba29f8ec1bfb3, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.396
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -1510,6 +1514,48 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!143 &737231958980959328
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3455344859972165280}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.01
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-1054508341563325826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3455344859972165280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c50232852f51c14db5bdee665905665, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 0}
+  walkSpeed: 5
+  mouseSensitivity: 2
+  gravity: -9.81
 --- !u!1 &3712149880360358947
 GameObject:
   m_ObjectHideFlags: 0
@@ -2381,6 +2427,37 @@ Transform:
   - {fileID: 5801416546126062719}
   - {fileID: 3459973188780407842}
   m_Father: {fileID: 8906592840845041012}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6614315643145455939
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6596665375440218195}
+  m_Layer: 8
+  m_Name: CameraPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6596665375440218195
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6614315643145455939}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 160.5, z: 19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2952675317950547048}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6868023349915577112
 GameObject:
