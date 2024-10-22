@@ -20,6 +20,7 @@ public class ChapterManager : MonoBehaviour
 
     private Scene scene;
     public Animator crossFade;
+
     void Start()
     {
         scene = SceneManager.GetActiveScene();
@@ -44,28 +45,10 @@ public class ChapterManager : MonoBehaviour
 
     private IEnumerator StartChapterSequence()
     {
-        if(scene.name == "Chapter 1")
-        {
-            yield return StartCoroutine(ChapterOne());
-            yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
+        yield return StartCoroutine(ChapterOne());
+        yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
 
-        }
-        else if(scene.name == "Chapter 2")
-        {
-            yield return StartCoroutine(ChapterTwo());
-
-        }
-        else if (scene.name == "Chapter 3")
-        {
-            yield return StartCoroutine(ChapterThree());
-
-        }
-        else if (scene.name == "Chapter 4")
-        {
-            yield return StartCoroutine(ChapterFour());
-
-        }
-        
+        // No need to call ChapterTwo() here since it's called in WaitUntilSystemsFullyRepaired()
     }
 
     private IEnumerator ChapterOne()
@@ -86,7 +69,7 @@ public class ChapterManager : MonoBehaviour
             "Select a crew member and assign them to a system to begin repairs."
         };
 
-        // Here we pass a system type to the dialogue
+        // Start the dialogue
         dialogueManager.StartDialogue(dialogueLines, CubeInteraction.SystemType.LifeSupport);
 
         // Wait for the dialogue to finish
@@ -97,7 +80,6 @@ public class ChapterManager : MonoBehaviour
         systemHighlighter.HighlightSystem(shipController.engineSystemController.gameObject);
         systemHighlighter.HighlightSystem(shipController.hullSystemController.gameObject);
     }
-
 
     // Apply initial damage to the systems to simulate a damaged state
     private void ApplyInitialDamageToSystems()
@@ -117,10 +99,15 @@ public class ChapterManager : MonoBehaviour
         );
 
         // Stop highlighting once systems are repaired
-        LoadNextLevel();
         systemHighlighter.StopHighlighting(shipController.lifeSupportController.gameObject);
         systemHighlighter.StopHighlighting(shipController.engineSystemController.gameObject);
         systemHighlighter.StopHighlighting(shipController.hullSystemController.gameObject);
+
+        // Now, display Chapter 2 dialogue
+        yield return StartCoroutine(ChapterTwo());
+
+        // Now, proceed to load the next level
+        LoadNextLevel();
     }
 
     private IEnumerator ChapterTwo()
@@ -141,51 +128,10 @@ public class ChapterManager : MonoBehaviour
         // Wait for the decision to be made
         yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
 
-        // Proceed to the next chapter after a short delay
-        yield return new WaitForSeconds(2f);
-    }
-
-    private IEnumerator ChapterThree()
-    {
-        currentChapter = Chapter.Chapter3;
-
-        // Display Chapter 3 intro with cinematic text
-        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 3", "Black Hole Event"));
-
-        // Trigger black hole event decision after intro
-        decisionPanelManager.OpenDecisionPanel(
-            "A black hole is pulling the ship! What's your choice?",
-            "Boost engines to escape (Use extra fuel)",
-            "Ride the gravitational pull (Risk engine failure)",
-            shipController
-        );
-
-        // Wait for the decision to be made
-        yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
+        // Optionally, handle the outcome of the decision here
 
         // Proceed to the next chapter after a short delay
         yield return new WaitForSeconds(2f);
-    }
-
-    private IEnumerator ChapterFour()
-    {
-        currentChapter = Chapter.Chapter4;
-
-        // Display Chapter 4 intro with cinematic text
-        yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 4", "Reaching the Lighthouse"));
-
-        // Trigger the final event decision after intro
-        decisionPanelManager.OpenDecisionPanel(
-            "You've reached the Lighthouse! Final decision?",
-            "Dock safely (End the game)",
-            "Broadcast a message and leave (New journey)",
-            shipController
-        );
-
-        // Wait for the decision to be made
-        yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
-
-        // End the game or start a new journey based on the decision
     }
 
     public void LoadNextLevel()

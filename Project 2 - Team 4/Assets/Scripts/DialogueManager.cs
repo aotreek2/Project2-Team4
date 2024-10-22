@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.Linq;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -16,16 +15,11 @@ public class DialogueManager : MonoBehaviour
     public TMP_Text systemHealthText; // Text for displaying system health (system name)
     public Slider systemHealthSlider; // Slider for visual system health
     public TMP_Text selectedSystemText; // Text to display the currently selected system name
-    public GameObject historyPanel; // Panel to display dialogue history
-    public TMP_Text historyText; // Text component for dialogue history
-    public Button showHistoryButton; // Button to show history
-    public Button closeHistoryButton; // Button to close history
 
     [Header("Settings")]
     public float typingSpeed = 0.05f; // Speed at which characters are typed out
     public float fadeDuration = 0.5f; // Duration for fade in/out
 
-    private List<string> dialogueHistory = new List<string>(); // Stores previous dialogue lines
     public bool isDialogueActive { get; private set; }
     private bool isIntroCompleted = false; // Flag to indicate if the intro dialogue is finished
     private bool isTyping = false; // Flag to indicate if typing is in progress
@@ -75,27 +69,13 @@ public class DialogueManager : MonoBehaviour
         continueText.alpha = 0; // Hide "Click to Continue" text at the start
         isDialogueActive = false;
 
-        // Hide the history panel and system UI elements at the start
-        if (historyPanel != null)
-            historyPanel.SetActive(false);
+        // Hide system UI elements at the start
         if (systemHealthSlider != null)
             systemHealthSlider.gameObject.SetActive(false); // Hide the health bar slider
         if (systemHealthText != null)
             systemHealthText.gameObject.SetActive(false);   // Hide the system health text
         if (selectedSystemText != null)
             selectedSystemText.gameObject.SetActive(false); // Hide the selected system text
-
-        // Assign listeners to the buttons
-        if (showHistoryButton != null)
-        {
-            showHistoryButton.onClick.AddListener(ShowHistory);
-            Debug.Log("DialogueManager: ShowHistoryButton listener added.");
-        }
-        if (closeHistoryButton != null)
-        {
-            closeHistoryButton.onClick.AddListener(HideHistory);
-            Debug.Log("DialogueManager: CloseHistoryButton listener added.");
-        }
 
         // Set anchors to top-right, so the panel stays at the top-right
         dialoguePanel.anchorMin = new Vector2(1, 1); // Top-right
@@ -118,51 +98,7 @@ public class DialogueManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Display dialogue history
-    /// </summary>
-    public void ShowHistory()
-    {
-        Debug.Log("DialogueManager: ShowHistory called.");
-        // Only show history after the intro is completed
-        if (isIntroCompleted && historyPanel != null)
-        {
-            historyPanel.SetActive(true);
-            historyText.text = string.Join("\n", dialogueHistory.ToArray());
-            Debug.Log("DialogueManager: History panel shown.");
-        }
-        else
-        {
-            Debug.LogWarning("DialogueManager: Attempted to show history before intro completion or historyPanel is null.");
-        }
-    }
-
-    /// <summary>
-    /// Hide dialogue history
-    /// </summary>
-    public void HideHistory()
-    {
-        Debug.Log("DialogueManager: HideHistory called.");
-        if (historyPanel != null)
-            historyPanel.SetActive(false);
-        Debug.Log("DialogueManager: History panel hidden.");
-    }
-
-    /// <summary>
-    /// Add the dialogue to history after each sentence
-    /// </summary>
-    private void AddToHistory(string sentence)
-    {
-        dialogueHistory.Add(sentence);
-        Debug.Log($"DialogueManager: Added to history - \"{sentence}\"");
-        if (dialogueHistory.Count > 100)
-        {
-            dialogueHistory.RemoveAt(0); // Remove oldest dialogue when the list grows too long
-            Debug.Log("DialogueManager: Dialogue history exceeded 100 entries. Oldest entry removed.");
-        }
-    }
-
-    /// <summary>
-    /// Start a general dialogue and add the lines to history
+    /// Start a general dialogue
     /// </summary>
     public void StartDialogue(string[] lines, CubeInteraction.SystemType systemType)
     {
@@ -176,12 +112,6 @@ public class DialogueManager : MonoBehaviour
         string contextInfo = GetSystemDescription(systemType);
         List<string> fullDialogue = new List<string>(lines);
         fullDialogue.Insert(0, contextInfo); // Add the system description as the first line
-
-        // Add lines to history
-        foreach (var line in fullDialogue)
-        {
-            AddToHistory(line);
-        }
 
         StartCoroutine(DisplayDialogueSequence(fullDialogue.ToArray()));
     }
@@ -199,9 +129,6 @@ public class DialogueManager : MonoBehaviour
         }
 
         string systemInfo = $"System: {systemName}\nHealth: {systemHealth}%\nCrew Death Chance: {deathChance * 100f}%";
-
-        // Add to history
-        AddToHistory(systemInfo);
 
         // Start the dialogue sequence with system info
         StartCoroutine(DisplayDialogueSequence(new string[] { systemInfo }));
