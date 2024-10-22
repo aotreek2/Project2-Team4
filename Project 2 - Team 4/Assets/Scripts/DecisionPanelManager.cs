@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class DecisionPanelManager : MonoBehaviour
 {
@@ -110,22 +111,24 @@ public class DecisionPanelManager : MonoBehaviour
                 // Handle Chapter 2, Option 1
                 shipController.SacrificeCrew(5);
                 hullSystemController.RepairHull(20f);
+                shipController.resourceManager.UpdateResourceUI();
                 Debug.Log("Diverted power to shields. Sacrificed 5 crew.");
                 break;
             case ChapterManager.Chapter.Chapter3:
                 // Handle Chapter 3, Option 1
                 shipController.resourceManager.fuelAmount -= 20f;
                 engineSystemController.RepairEngine(20f);
+                shipController.resourceManager.UpdateResourceUI();
                 Debug.Log("Boosted engines. Used extra fuel.");
                 break;
             case ChapterManager.Chapter.Chapter4:
                 // Handle Chapter 4, Option 1 (End game)
+                SceneManager.LoadScene("MainMenu");
                 Debug.Log("Docked safely. Game ends.");
                 // Implement end-game logic
                 break;
         }
 
-        shipController.resourceManager.UpdateResourceUI();
         CloseDecisionPanel();
     }
 
@@ -147,6 +150,7 @@ public class DecisionPanelManager : MonoBehaviour
                 break;
             case ChapterManager.Chapter.Chapter4:
                 // Handle Chapter 4, Option 2 (Start new journey)
+                SceneManager.LoadScene("Chapter 1");
                 Debug.Log("Broadcasted message and left. New journey begins.");
                 // Implement new journey logic
                 break;

@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
+using TMPro;
 
 public class CrewMember : MonoBehaviour
 {
@@ -17,6 +19,8 @@ public class CrewMember : MonoBehaviour
     public enum Task { Idle, RepairEngines, RepairLifeSupport, RepairHull, RepairGenerator, Wander, Dead }
     public Task currentTask = Task.Idle;
 
+    private Animator crewAnim;
+    public Image crewSelectedDot;
     private NavMeshAgent navAgent;
     private bool isPerformingTask = false;
     private CubeInteraction currentCubeInteraction; // Reference to the system being repaired
@@ -67,6 +71,9 @@ public class CrewMember : MonoBehaviour
             rb = gameObject.AddComponent<Rigidbody>();
             rb.isKinematic = true;
         }
+
+        crewAnim = GetComponent<Animator>();
+        crewSelectedDot.gameObject.SetActive(false);
 
         // Find ShipController in the scene
         shipController = FindObjectOfType<ShipController>();
@@ -146,6 +153,12 @@ public class CrewMember : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        crewSelectedDot.gameObject.transform.LookAt(Camera.main.transform.rotation * Vector3.forward, Camera.main.transform.rotation * Vector3.up);
+
+    }
+
     // Assign the crew member to a repair system
     public void AssignToRepairPoint(CubeInteraction cubeInteraction)
     {
@@ -163,6 +176,7 @@ public class CrewMember : MonoBehaviour
         if (navAgent != null && currentRepairPoint != null)
         {
             navAgent.SetDestination(currentRepairPoint.position);
+            crewAnim.SetTrigger("Moving");
             navAgent.isStopped = false;
             if (walkingSFX != null && !walkingSFX.isPlaying)
             {
@@ -203,6 +217,7 @@ public class CrewMember : MonoBehaviour
             return;
 
         isPerformingTask = true;
+        crewAnim.SetTrigger("Fixing");
         navAgent.isStopped = true;
 
         // Start the repair process via CubeInteraction
@@ -237,6 +252,7 @@ public class CrewMember : MonoBehaviour
                 waitTimeCounter -= Time.deltaTime;
                 if (waitTimeCounter <= 0f)
                 {
+                    crewAnim.SetTrigger("Moving");
                     Vector3 newPos = RandomNavSphere(transform.position, wanderRadius, NavMesh.AllAreas);
                     navAgent.SetDestination(newPos);
                     navAgent.isStopped = false;
@@ -302,18 +318,18 @@ public class CrewMember : MonoBehaviour
     public void Select()
     {
         // Highlight the crew member when selected
-        if (crewRenderer != null)
+        if (crewSelectedDot != null)
         {
-            crewRenderer.material.color = Color.green;
+            crewSelectedDot.gameObject.SetActive(true);
         }
     }
 
     public void Deselect()
     {
         // Reset the crew member's appearance when deselected
-        if (crewRenderer != null)
+        if (crewSelectedDot != null)
         {
-            crewRenderer.material.color = Color.white;
+            crewSelectedDot.gameObject.SetActive(false);
         }
     }
 
@@ -333,7 +349,8 @@ public class CrewMember : MonoBehaviour
         Animator animator = GetComponent<Animator>();
         if (animator != null)
         {
-            animator.SetTrigger("Die");
+            animator.SetTrigger("Death" +
+                "");
         }
         Deselect();
         // Optionally, destroy the crew member after a delay

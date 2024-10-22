@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using UnityEditor.SearchService;
+using UnityEngine.SceneManagement;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -109,12 +111,12 @@ public class ResourceManager : MonoBehaviour
     {
         if (oxygenLevel <= 0f)
         {
-            Debug.Log("Game Over! Oxygen depleted.");
+            SceneManager.LoadScene("DeathScene");
         }
 
         if (fuelAmount <= 0f)
         {
-            Debug.Log("Game Over! Fuel exhausted.");
+            SceneManager.LoadScene("DeathScene");
         }
 
         if (distanceToLighthouse <= 0f)
