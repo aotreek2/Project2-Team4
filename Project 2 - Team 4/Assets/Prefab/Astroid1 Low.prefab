@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 3973478164553911526}
   - component: {fileID: 4450904598672638477}
-  m_Layer: 0
+  - component: {fileID: 676237959778275942}
+  m_Layer: 13
   m_Name: Astroid1 Low
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,6 +55,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &676237959778275942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5059679769475853762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 424b1f6ca37133e4d8d2b061d4e2b72e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 50
 --- !u!1 &7202179566781485353
 GameObject:
   m_ObjectHideFlags: 0
@@ -65,7 +79,7 @@ GameObject:
   - component: {fileID: 3182472343869711907}
   - component: {fileID: 4760405380549530890}
   - component: {fileID: 3538601083185508369}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Astroid1_Low
   m_TagString: Untagged
   m_Icon: {fileID: 0}
