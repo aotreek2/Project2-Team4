@@ -8,8 +8,8 @@ public class CubeInteraction : MonoBehaviour
     public SystemType systemType;
 
     public RepairProgressBar repairProgressBar;
-    public Transform repairPoint; // Ensure this is assigned in the Inspector
-    public float baseRepairDuration = 10f; // Base duration to repair from 0% to 100% health without efficiency modifiers
+    public Transform repairPoint; // Assigned in the Inspector
+    public float baseRepairDuration = 10f; // Base duration for repairs
 
     [Range(0f, 1f)]
     public float baseDeathChanceMultiplier = 0.05f; // Base death chance multiplier
@@ -122,16 +122,24 @@ public class CubeInteraction : MonoBehaviour
             Debug.Log("CubeInteraction: RepairProgressBar hidden initially.");
         }
 
-        // Ensure this GameObject has a Collider set as Trigger for repair zone detection
-        Collider collider = GetComponent<Collider>();
-        if (collider == null)
+        // Ensure RepairZone has a Collider set as Trigger for repair zone detection
+        GameObject repairZoneObj = transform.Find("RepairZone")?.gameObject;
+        if (repairZoneObj == null)
         {
-            Debug.LogError($"CubeInteraction: {gameObject.name} requires a Collider component to detect crew members in the repair zone.");
+            Debug.LogError($"CubeInteraction: RepairZone not found as a child of {gameObject.name}. Please create and assign it.");
         }
-        else if (!collider.isTrigger)
+        else
         {
-            collider.isTrigger = true;
-            Debug.LogWarning($"CubeInteraction: Collider on {gameObject.name} was not set as Trigger. It has been set to Trigger.");
+            Collider collider = repairZoneObj.GetComponent<Collider>();
+            if (collider == null)
+            {
+                Debug.LogError($"CubeInteraction: RepairZone requires a Collider component to detect crew members.");
+            }
+            else if (!collider.isTrigger)
+            {
+                collider.isTrigger = true;
+                Debug.LogWarning($"CubeInteraction: Collider on RepairZone was not set as Trigger. It has been set to Trigger.");
+            }
         }
 
         // Assign DialogueManager if not assigned

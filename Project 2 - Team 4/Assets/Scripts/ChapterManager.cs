@@ -10,7 +10,6 @@ public class ChapterManager : MonoBehaviour
     public ShipController shipController;
     public DecisionPanelManager decisionPanelManager;
     public DialogueManager dialogueManager; // Reference to DialogueManager for dialogue control
-    public SystemHighlighter systemHighlighter; // Reference to a system highlighting manager
     public ChapterIntroUI chapterIntroUI; // Reference to ChapterIntroUI for cinematic intro
 
     // Damage levels for starting state
@@ -33,9 +32,6 @@ public class ChapterManager : MonoBehaviour
 
         if (dialogueManager == null)
             dialogueManager = FindObjectOfType<DialogueManager>();
-
-        if (systemHighlighter == null)
-            systemHighlighter = FindObjectOfType<SystemHighlighter>();
 
         if (chapterIntroUI == null)
             chapterIntroUI = FindObjectOfType<ChapterIntroUI>();
@@ -74,11 +70,6 @@ public class ChapterManager : MonoBehaviour
 
         // Wait for the dialogue to finish
         yield return new WaitUntil(() => !dialogueManager.isDialogueActive);
-
-        // Highlight critical systems to be repaired
-        systemHighlighter.HighlightSystem(shipController.lifeSupportController.gameObject);
-        systemHighlighter.HighlightSystem(shipController.engineSystemController.gameObject);
-        systemHighlighter.HighlightSystem(shipController.hullSystemController.gameObject);
     }
 
     // Apply initial damage to the systems to simulate a damaged state
@@ -97,11 +88,6 @@ public class ChapterManager : MonoBehaviour
             shipController.engineSystemController.engineHealth >= shipController.engineSystemController.engineMaxHealth &&
             shipController.hullSystemController.hullHealth >= shipController.hullSystemController.hullMaxHealth
         );
-
-        // Stop highlighting once systems are repaired
-        systemHighlighter.StopHighlighting(shipController.lifeSupportController.gameObject);
-        systemHighlighter.StopHighlighting(shipController.engineSystemController.gameObject);
-        systemHighlighter.StopHighlighting(shipController.hullSystemController.gameObject);
 
         // Now, display Chapter 2 dialogue
         yield return StartCoroutine(ChapterTwo());
