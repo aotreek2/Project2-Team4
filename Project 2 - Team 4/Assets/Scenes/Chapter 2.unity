@@ -8329,7 +8329,6 @@ MonoBehaviour:
   shipController: {fileID: 1285887424}
   decisionPanelManager: {fileID: 0}
   dialogueManager: {fileID: 1720415271}
-  systemHighlighter: {fileID: 765451397}
   chapterIntroUI: {fileID: 237323202}
   initialLifeSupportDamage: 50
   initialEngineDamage: 60
@@ -16122,8 +16121,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9398afb0c9e8a994692004eebedb6f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 0.005
 --- !u!4 &765451398
 Transform:
   m_ObjectHideFlags: 0
@@ -40420,7 +40417,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogueCanvasGroup: {fileID: 1720415273}
   dialoguePanel: {fileID: 1269643662}
-  dialogueBackgroundImage: {fileID: 0}
+  dialogueBackgroundImage: {fileID: 1269643663}
   dialogueText: {fileID: 1164593539}
   continueText: {fileID: 1395638846}
   systemHealthText: {fileID: 890025138}
