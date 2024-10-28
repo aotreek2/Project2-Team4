@@ -26,6 +26,11 @@ public class DecisionPanelManager : MonoBehaviour
     // **Added Variables for Chapter System**
     private bool decisionMade = false;
     public bool IsDecisionMade => decisionMade;
+
+    // **Added Enum and Property for Selected Option**
+    public enum DecisionOption { Option1, Option2 }
+    public DecisionOption SelectedOption { get; private set; }
+
     private ChapterManager chapterManager;
 
     void Start()
@@ -48,30 +53,56 @@ public class DecisionPanelManager : MonoBehaviour
         if (shipController == null)
         {
             shipController = FindObjectOfType<ShipController>();
+            if (shipController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] ShipController not found in the scene.");
+            }
         }
 
         if (lifeSupportController == null)
         {
             lifeSupportController = FindObjectOfType<LifeSupportController>();
+            if (lifeSupportController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] LifeSupportController not found in the scene.");
+            }
         }
 
         if (hullSystemController == null)
         {
             hullSystemController = FindObjectOfType<HullSystemController>();
+            if (hullSystemController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] HullSystemController not found in the scene.");
+            }
         }
 
         if (engineSystemController == null)
         {
             engineSystemController = FindObjectOfType<EngineSystemController>();
+            if (engineSystemController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] EngineSystemController not found in the scene.");
+            }
         }
 
         // **Initialize ChapterManager**
         chapterManager = FindObjectOfType<ChapterManager>();
+        if (chapterManager == null)
+        {
+            Debug.LogError("[DecisionPanelManager] ChapterManager not found in the scene.");
+        }
     }
 
     // Method to open the decision panel with options and fade-in effect
     public void OpenDecisionPanel(string eventDescription, string option1, string option2, ShipController controller)
     {
+        if (decisionMade)
+        {
+            Debug.LogWarning("[DecisionPanelManager] Decision panel is already open.");
+            return;
+        }
+
         decisionMade = false; // Reset decision flag
         shipController = controller;
         currentEvent = eventDescription.ToLower(); // Convert to lower case for easier comparison
@@ -103,7 +134,14 @@ public class DecisionPanelManager : MonoBehaviour
     // Handles option 1 being selected
     private void OnOption1Selected()
     {
+        if (decisionMade)
+        {
+            Debug.LogWarning("[DecisionPanelManager] Decision has already been made.");
+            return;
+        }
+
         decisionMade = true;
+        SelectedOption = DecisionOption.Option1;
 
         switch (chapterManager.currentChapter)
         {
@@ -111,37 +149,54 @@ public class DecisionPanelManager : MonoBehaviour
                 // Handle Chapter 2, Option 1
                 shipController.SacrificeCrew(5);
                 hullSystemController.RepairHull(20f);
-                shipController.resourceManager.UpdateResourceUI();
+                if (shipController.resourceManager != null)
+                {
+                    shipController.resourceManager.UpdateResourceUI();
+                }
                 Debug.Log("Diverted power to shields. Sacrificed 5 crew.");
                 break;
             case ChapterManager.Chapter.Chapter3:
                 // Handle Chapter 3, Option 1
-                shipController.resourceManager.fuelAmount -= 20f;
+                if (shipController.resourceManager != null)
+                {
+                    shipController.resourceManager.fuelAmount -= 20f;
+                    shipController.resourceManager.UpdateResourceUI();
+                }
                 engineSystemController.RepairEngine(20f);
-                shipController.resourceManager.UpdateResourceUI();
                 Debug.Log("Boosted engines. Used extra fuel.");
                 break;
             case ChapterManager.Chapter.Chapter4:
                 // Handle Chapter 4, Option 1 (End game)
                 SceneManager.LoadScene("MainMenu");
                 Debug.Log("Docked safely. Game ends.");
-                // Implement end-game logic
+                // Implement end-game logic here
+                break;
+            default:
+                Debug.LogWarning("[DecisionPanelManager] Option 1 selected in an unsupported chapter.");
                 break;
         }
 
         CloseDecisionPanel();
     }
 
+    // Handles option 2 being selected
     private void OnOption2Selected()
     {
+        if (decisionMade)
+        {
+            Debug.LogWarning("[DecisionPanelManager] Decision has already been made.");
+            return;
+        }
+
         decisionMade = true;
+        SelectedOption = DecisionOption.Option2;
 
         switch (chapterManager.currentChapter)
         {
             case ChapterManager.Chapter.Chapter2:
                 // Handle Chapter 2, Option 2
-                hullSystemController.ReduceHullIntegrity(50f);
-                Debug.Log("Navigated carefully. Hull damaged.");
+                shipController.ApplyHullDamage(20f); // Now defined in ShipController
+                Debug.Log("Navigated carefully. Applied 20% hull damage risk.");
                 break;
             case ChapterManager.Chapter.Chapter3:
                 // Handle Chapter 3, Option 2
@@ -150,13 +205,20 @@ public class DecisionPanelManager : MonoBehaviour
                 break;
             case ChapterManager.Chapter.Chapter4:
                 // Handle Chapter 4, Option 2 (Start new journey)
-                SceneManager.LoadScene("Chapter 1");
+                SceneManager.LoadScene("Chapter1Scene"); // Ensure correct scene name
                 Debug.Log("Broadcasted message and left. New journey begins.");
-                // Implement new journey logic
+                // Implement new journey logic here
+                break;
+            default:
+                Debug.LogWarning("[DecisionPanelManager] Option 2 selected in an unsupported chapter.");
                 break;
         }
 
-        shipController.resourceManager.UpdateResourceUI();
+        if (shipController.resourceManager != null)
+        {
+            shipController.resourceManager.UpdateResourceUI();
+        }
+
         CloseDecisionPanel();
     }
 

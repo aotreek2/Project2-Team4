@@ -1080,6 +1080,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crewman (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: fpsCameraPos
       value: 
@@ -2008,7 +2012,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -4, y: -440}
+  m_AnchoredPosition: {x: -4, y: -192}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &133757970
@@ -3794,7 +3798,6 @@ MonoBehaviour:
   shipController: {fileID: 852831804}
   decisionPanelManager: {fileID: 699162546}
   dialogueManager: {fileID: 2130366117}
-  systemHighlighter: {fileID: 894303235}
   chapterIntroUI: {fileID: 250070969}
   initialLifeSupportDamage: 50
   initialEngineDamage: 60
@@ -3875,7 +3878,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 740023756}
   - {fileID: 1225405237}
   - {fileID: 1695214159}
   m_Father: {fileID: 0}
@@ -7363,6 +7365,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7293155604410998211, guid: 23dd3aa577dbccc43ac7b00f3e5d4110, type: 3}
   m_PrefabInstance: {fileID: 501480992}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &505624487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 505624488}
+  m_Layer: 9
+  m_Name: Repair Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &505624488
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505624487}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.7071057, z: -0, w: 0.7071079}
+  m_LocalPosition: {x: 64.01, y: 0, z: -37.57}
+  m_LocalScale: {x: 1.3648645, y: 1.3648645, z: 1.3648645}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1747077181}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &506975949
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15872,81 +15905,6 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 6430079752750172880, guid: 1b6c78e394bb8e04c89a4e04e791c716, type: 3}
   m_PrefabInstance: {fileID: 733924555}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &740023753
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 740023756}
-  - component: {fileID: 740023755}
-  - component: {fileID: 740023754}
-  m_Layer: 0
-  m_Name: Fog Panel
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &740023754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 740023753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 0.48235294}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &740023755
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 740023753}
-  m_CullTransparentMesh: 1
---- !u!224 &740023756
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 740023753}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 3.2168536}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 250070974}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -159.82861, y: -274.3969}
-  m_SizeDelta: {x: -2560, y: -1440}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &742237523
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23419,8 +23377,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9398afb0c9e8a994692004eebedb6f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 0.005
 --- !u!4 &894303236
 Transform:
   m_ObjectHideFlags: 0
@@ -23634,6 +23590,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6726822319229558511, guid: 3632e78a31bf33147a835e6ccfa58371, type: 3}
   m_PrefabInstance: {fileID: 895951878}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &898382437
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 898382438}
+  m_Layer: 9
+  m_Name: Repair Point (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &898382438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898382437}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.70680606, z: -0, w: -0.7074075}
+  m_LocalPosition: {x: -6259, y: 0, z: 2514}
+  m_LocalScale: {x: 116.65556, y: 116.6556, z: 116.65556}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1743883292}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &900195560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24494,6 +24481,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5441165374268697071, guid: a926e4b6f2223ce458aa57089e67ab38, type: 3}
   m_PrefabInstance: {fileID: 965333795}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &982163819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 982163820}
+  m_Layer: 9
+  m_Name: Repair Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &982163820
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982163819}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: 6.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1494198418}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &982258831
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26836,6 +26854,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crewman (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: fpsCameraPos
       value: 
@@ -27325,9 +27347,9 @@ RectTransform:
   - {fileID: 987962034}
   m_Father: {fileID: 762472219}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1066, y: -671}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -209, y: 61}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1183417605
@@ -28310,10 +28332,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 200
+  m_fontSize: 72
   m_fontSizeBase: 200
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -28346,7 +28368,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -950.12555, y: -358.2285, z: -950.2089, w: -594.6676}
+  m_margin: {x: -342.27228, y: -206.62604, z: -356.59515, w: 104.70813}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -30954,6 +30976,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crewman (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: fpsCameraPos
       value: 
@@ -32084,6 +32110,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6312008645357419429, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2041565342}
+    - targetCorrespondingSourceObject: {fileID: 6312008645357419429, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 982163820}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
       insertIndex: -1
@@ -32097,9 +32126,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1494198419}
-    - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1494198422}
     - targetCorrespondingSourceObject: {fileID: 6688710518540689695, guid: 91676a53c53db31458ab5e3c718bd92e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1494198423}
@@ -32143,7 +32169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 0
   repairProgressBar: {fileID: 801844853}
-  repairPoint: {fileID: 2041565342}
+  repairPoint: {fileID: 982163820}
   baseRepairDuration: 10
   baseDeathChanceMultiplier: 0.05
   dialogueManager: {fileID: 2130366117}
@@ -32215,21 +32241,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1494198422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1494198413}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
-  m_EffectDistance: {x: 1, y: -1}
-  m_UseGraphicAlpha: 1
 --- !u!65 &1494198423
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34273,6 +34284,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crewman (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: fpsCameraPos
       value: 
@@ -34604,10 +34619,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 90
+  m_fontSize: 72
   m_fontSizeBase: 90
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -34670,7 +34685,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.00012207031, y: -454.99933}
+  m_AnchoredPosition: {x: 2, y: -454.99933}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1701309180
@@ -40062,10 +40077,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
+  m_fontSize: 20.7
   m_fontSizeBase: 25
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -40098,7 +40113,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -31.842575, z: 0, w: -31.672388}
+  m_margin: {x: 52.725395, y: 4.1436095, z: 52.575077, w: 6.329178}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -40447,6 +40462,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1219066163}
+    - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 898382438}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5947132192605814783, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
@@ -40661,6 +40679,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3519787157226122692, guid: c8421c5f00d106844825923a0b6af850, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1049161633}
+    - targetCorrespondingSourceObject: {fileID: 3519787157226122692, guid: c8421c5f00d106844825923a0b6af850, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 505624488}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4292805011051755390, guid: c8421c5f00d106844825923a0b6af850, type: 3}
       insertIndex: -1
@@ -40801,7 +40822,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 3
   repairProgressBar: {fileID: 27460723}
-  repairPoint: {fileID: 1049161633}
+  repairPoint: {fileID: 505624488}
   baseRepairDuration: 10
   baseDeathChanceMultiplier: 0.05
   dialogueManager: {fileID: 2130366117}
@@ -42169,6 +42190,10 @@ PrefabInstance:
     - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: m_Name
       value: Crewman (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: crewName
@@ -44726,6 +44751,10 @@ PrefabInstance:
     - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: m_Name
       value: Crewman (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3455344859972165280, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4342801497370454460, guid: a1599c89f628c494cb0401202ebf6617, type: 3}
       propertyPath: crewName

@@ -341,4 +341,17 @@ public class ShipController : MonoBehaviour
             engineSystemController.AddFuel(biomassAmount); // Now biomass goes to the engine system
         }
     }
+
+        public void ApplyHullDamage(float damageAmount)
+    {
+        if (hullSystemController != null)
+        {
+            hullSystemController.DamageHull(damageAmount);
+            Debug.Log($"[ShipController] Applied {damageAmount}% hull damage. Current hull health: {hullSystemController.hullHealth}%.");
+        }
+        else
+        {
+            Debug.LogError("[ShipController] HullSystemController is not assigned.");
+        }
+    }
 }
