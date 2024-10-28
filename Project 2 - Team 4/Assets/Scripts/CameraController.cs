@@ -1,3 +1,4 @@
+// CameraController.cs
 using UnityEngine;
 using System.Collections;
 using TMPro;
@@ -179,6 +180,7 @@ public class CameraController : MonoBehaviour
                     if (instructionText != null)
                     {
                         instructionText.enabled = true;
+                        instructionText.text = "Press 'F' to enter first-person view.";
                     }
                     canEnterFirstPerson = true;
 
@@ -372,7 +374,7 @@ public class CameraController : MonoBehaviour
     {
         if (isInFirstPerson)
         {
-            //StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
+            StartCoroutine(DoFirstPersonCameraShake(duration, magnitude));
         }
         else
         {

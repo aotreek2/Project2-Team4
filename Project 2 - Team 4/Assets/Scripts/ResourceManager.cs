@@ -1,53 +1,57 @@
+// ResourceManager.cs
 using UnityEngine;
 using TMPro;
-using UnityEditor.SearchService;
-using UnityEngine.SceneManagement;
+using UnityEngine.SceneManagement; // Added to resolve SceneManager errors
 
 public class ResourceManager : MonoBehaviour
 {
-    // Resource Variables
-    public float oxygenLevel = 100f; // Oxygen Level (%)
-    public float fuelAmount = 100f;  // Fuel Amount (%)
-    public float distanceToLighthouse = 1000f; // Distance in units
+    [Header("Crew and Fuel")]
+    public int crewCount = 20; // Starting crew count
+    public float fuelAmount = 100f; // Starting fuel
 
-    // Efficiency variables
+    [Header("Other Resources")]
+    public float oxygenLevel = 100f; // Oxygen Level (%)
+    public float distanceToLighthouse = 1000f; // Distance in units
+    public float scrapAmount = 50f; // Scrap Resource
+
+    [Header("Efficiency Variables")]
     public float engineEfficiency = 1f;
     public float lifeSupportEfficiency = 1f;
     public float generatorEfficiency = 1f;
 
-    // Fuel consumption variables
+    [Header("Consumption Variables")]
     public float baseFuelConsumptionRate = 0.2f;
     public float fuelDepletionMultiplier = 0.5f;
-
-    // Oxygen consumption variables
     public float baseOxygenConsumptionRate = 1f;
     public float oxygenRecoveryRate = 5f;
 
-    // Scrap Resource
-    public float scrapAmount = 50f;
-
-    // UI Elements
+    [Header("UI Components")]
+    public TextMeshProUGUI crewCountText; // UI Text to display crew count
+    public TextMeshProUGUI fuelAmountText; // UI Text to display fuel amount
     public TextMeshProUGUI oxygenText;
-    public TextMeshProUGUI fuelText;
     public TextMeshProUGUI distanceText;
     public TextMeshProUGUI scrapText;
     public TextMeshProUGUI moraleText;
 
-    // References to Controllers
+    [Header("References")]
     public ShipController shipController;
     public LifeSupportController lifeSupportController;
     public ChapterManager chapterManager;
 
-    // New variable to control if systems are active
+    // Variable to control if systems are active
     public bool systemsActive = true;
 
     void Start()
     {
+        // Initialize references if not assigned via Inspector
         if (shipController == null)
             shipController = FindObjectOfType<ShipController>();
 
         if (lifeSupportController == null)
             lifeSupportController = FindObjectOfType<LifeSupportController>();
+
+        if (chapterManager == null)
+            chapterManager = FindObjectOfType<ChapterManager>();
 
         UpdateResourceUI();
     }
@@ -59,10 +63,14 @@ public class ResourceManager : MonoBehaviour
             // Only consume resources if the systems are active
             ConsumeResources();
         }
+
         UpdateResourceUI();
         CheckGameOver();
     }
 
+    /// <summary>
+    /// Handles the consumption of resources like oxygen and fuel.
+    /// </summary>
     void ConsumeResources()
     {
         // Oxygen management
@@ -89,24 +97,45 @@ public class ResourceManager : MonoBehaviour
         distanceToLighthouse = Mathf.Clamp(distanceToLighthouse, 0f, 1000f);
     }
 
+    /// <summary>
+    /// Updates all resource-related UI elements.
+    /// </summary>
     public void UpdateResourceUI()
     {
-        if (oxygenText != null)
-            oxygenText.text = "Oxygen Level: " + oxygenLevel.ToString("F1") + "%";
+        if (crewCountText != null)
+            crewCountText.text = $"Crew: {crewCount}";
+        else
+            Debug.LogError("[ResourceManager] crewCountText is not assigned.");
 
-        if (fuelText != null)
-            fuelText.text = "Fuel Amount: " + fuelAmount.ToString("F1") + "%";
+        if (fuelAmountText != null)
+            fuelAmountText.text = $"Fuel: {fuelAmount:F1}";
+        else
+            Debug.LogError("[ResourceManager] fuelAmountText is not assigned.");
+
+        if (oxygenText != null)
+            oxygenText.text = $"Oxygen Level: {oxygenLevel:F1}%";
+        else
+            Debug.LogError("[ResourceManager] oxygenText is not assigned.");
 
         if (distanceText != null)
-            distanceText.text = "Distance to Lighthouse: " + distanceToLighthouse.ToString("F1") + " units";
+            distanceText.text = $"Distance to Lighthouse: {distanceToLighthouse:F1} units";
+        else
+            Debug.LogError("[ResourceManager] distanceText is not assigned.");
 
         if (scrapText != null)
-            scrapText.text = "Scrap: " + scrapAmount.ToString("F0");
+            scrapText.text = $"Scrap: {scrapAmount:F0}";
+        else
+            Debug.LogError("[ResourceManager] scrapText is not assigned.");
 
         if (moraleText != null && shipController != null)
-            moraleText.text = "Crew Morale: " + shipController.crewMorale.ToString("F0") + "%";
+            moraleText.text = $"Crew Morale: {shipController.crewMorale:F0}%";
+        else
+            Debug.LogError("[ResourceManager] moraleText or shipController is not assigned.");
     }
 
+    /// <summary>
+    /// Checks for game over conditions based on resource levels.
+    /// </summary>
     void CheckGameOver()
     {
         if (oxygenLevel <= 0f)
@@ -125,13 +154,70 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Toggles the active state of resource systems.
+    /// </summary>
+    /// <param name="state">True to activate, False to deactivate.</param>
     public void ToggleSystems(bool state)
     {
         systemsActive = state;
     }
 
-    // Methods to add resources if needed
-    public void AddScrap(float amount) { /*...*/ }
-    public void AddFuel(float amount) { /*...*/ }
-    public void AddOxygen(float amount) { /*...*/ }
+    /// <summary>
+    /// Adds scrap resources.
+    /// </summary>
+    /// <param name="amount">Amount of scrap to add.</param>
+    public void AddScrap(float amount)
+    {
+        scrapAmount += amount;
+        scrapAmount = Mathf.Clamp(scrapAmount, 0f, 100f); // Adjust max as needed
+        UpdateResourceUI();
+        Debug.Log($"[ResourceManager] Added {amount} scrap. Current scrap: {scrapAmount}");
+    }
+
+    /// <summary>
+    /// Adjusts fuel resources by a specified amount.
+    /// </summary>
+    /// <param name="amount">Amount of fuel to adjust.</param>
+    public void AdjustFuel(float amount) // Changed method name from AddFuel to AdjustFuel if needed
+    {
+        fuelAmount += amount;
+        fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f); // Adjust max as needed
+        UpdateResourceUI();
+        Debug.Log($"[ResourceManager] Fuel adjusted by {amount}. Current fuel: {fuelAmount}");
+    }
+
+    /// <summary>
+    /// Adds oxygen resources.
+    /// </summary>
+    /// <param name="amount">Amount of oxygen to add.</param>
+    public void AddOxygen(float amount)
+    {
+        oxygenLevel += amount;
+        oxygenLevel = Mathf.Clamp(oxygenLevel, 0f, 100f); // Adjust max as needed
+        UpdateResourceUI();
+        Debug.Log($"[ResourceManager] Added {amount} oxygen. Current oxygen level: {oxygenLevel}");
+    }
+
+    /// <summary>
+    /// Sacrifices a specified number of crew members.
+    /// </summary>
+    /// <param name="amount">Number of crew members to sacrifice.</param>
+    public void SacrificeCrew(int amount) // Ensure this method is public
+    {
+        if (crewCount >= amount)
+        {
+            crewCount -= amount;
+            UpdateResourceUI();
+            Debug.Log($"[ResourceManager] Sacrificed {amount} crew members. Remaining crew: {crewCount}");
+        }
+        else
+        {
+            Debug.LogWarning("[ResourceManager] Not enough crew members to sacrifice.");
+            // Optionally, trigger an alert
+            AlertManager.Instance?.ShowAlert("Not enough crew members to sacrifice.");
+        }
+    }
+
+    // Add other resource management methods as needed
 }

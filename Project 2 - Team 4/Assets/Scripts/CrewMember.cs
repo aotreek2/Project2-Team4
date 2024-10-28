@@ -1,3 +1,4 @@
+// CrewMember.cs
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -501,6 +502,13 @@ public class CrewMember : MonoBehaviour
             Debug.Log($"[Die] Death animation triggered for {crewName}");
         }
         Deselect();
+
+        // Notify ShipController about the death
+        if (shipController != null)
+        {
+            shipController.SacrificeCrew(1); // Adjust the number as needed
+        }
+
         // Optionally, destroy the crew member after a delay
         Destroy(gameObject, 5f); // Adjust the delay as needed
         Debug.Log($"[Die] {crewName} will be destroyed in 5 seconds");
@@ -539,7 +547,7 @@ public class CrewMember : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[MoveTowardsRepairPoint] {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the position is on the NavMesh.");
+                Debug.LogWarning($"[MoveTowardsRepairPoint] {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the repair point is on the NavMesh.");
             }
         }
     }

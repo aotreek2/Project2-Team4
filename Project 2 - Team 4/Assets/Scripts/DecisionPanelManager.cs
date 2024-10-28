@@ -1,3 +1,4 @@
+// DecisionPanelManager.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -20,7 +21,10 @@ public class DecisionPanelManager : MonoBehaviour
     public AudioClip decisionOpenSound; // Sound when panel opens
     public AudioClip decisionCloseSound; // Sound when panel closes
 
-    private ShipController shipController;
+    [Header("Controllers")]
+    public ShipController shipController;
+    public CameraController cameraController; // Reference to CameraController
+
     private LifeSupportController lifeSupportController; // Reference to LifeSupportController
     private HullSystemController hullSystemController; // Reference to HullSystemController
     private EngineSystemController engineSystemController; // Reference to EngineSystemController
@@ -45,10 +49,13 @@ public class DecisionPanelManager : MonoBehaviour
         option2Button.onClick.AddListener(OnOption2Selected);
 
         // Find Controllers
-        shipController = FindObjectOfType<ShipController>();
         if (shipController == null)
         {
-            Debug.LogError("[DecisionPanelManager] ShipController not found in the scene.");
+            shipController = FindObjectOfType<ShipController>();
+            if (shipController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] ShipController not found in the scene.");
+            }
         }
 
         lifeSupportController = FindObjectOfType<LifeSupportController>();
@@ -74,6 +81,20 @@ public class DecisionPanelManager : MonoBehaviour
         if (chapterManager == null)
         {
             Debug.LogError("[DecisionPanelManager] ChapterManager not found in the scene.");
+        }
+
+        // Assign CameraController via Inspector or find it
+        if (cameraController == null)
+        {
+            cameraController = FindObjectOfType<CameraController>();
+            if (cameraController == null)
+            {
+                Debug.LogError("[DecisionPanelManager] CameraController not found in the scene.");
+            }
+        }
+        else
+        {
+            Debug.Log("[DecisionPanelManager] CameraController assigned via Inspector.");
         }
     }
 
@@ -213,6 +234,9 @@ public class DecisionPanelManager : MonoBehaviour
                 break;
         }
 
+        // Trigger camera shake based on the decision
+        TriggerCameraShakeBasedOnDecision(option);
+
         // Close the decision panel
         CloseDecisionPanel();
     }
@@ -233,7 +257,7 @@ public class DecisionPanelManager : MonoBehaviour
         else if (option == DecisionOption.Option2)
         {
             // Option 2: Navigate through carefully (Risk hull damage)
-            shipController.ApplyHullDamage(20f);
+            shipController.ApplyHullDamage(20f); // Changed from DamageHull to ApplyHullDamage
             Debug.Log("Navigated carefully. Applied 20% hull damage risk.");
         }
     }
@@ -249,7 +273,7 @@ public class DecisionPanelManager : MonoBehaviour
             // Option 1: Boost engines (Use extra fuel)
             if (shipController.resourceManager != null)
             {
-                shipController.resourceManager.fuelAmount -= 20f;
+                shipController.resourceManager.AdjustFuel(-20f); // Changed from direct fuelAmount manipulation
                 shipController.resourceManager.UpdateResourceUI();
             }
             engineSystemController.RepairEngine(20f);
@@ -364,6 +388,69 @@ public class DecisionPanelManager : MonoBehaviour
         else
         {
             Debug.LogError("[DecisionPanelManager] decisionPanelCanvasGroup is not assigned.");
+        }
+    }
+
+    /// <summary>
+    /// Triggers camera shake based on the selected decision option.
+    /// </summary>
+    /// <param name="option">The selected decision option.</param>
+    private void TriggerCameraShakeBasedOnDecision(DecisionOption option)
+    {
+        if (cameraController == null)
+        {
+            Debug.LogError("[DecisionPanelManager] CameraController reference is missing.");
+            return;
+        }
+
+        float shakeDuration = 0.5f; // Duration of the shake in seconds
+        float shakeMagnitude = 0.3f; // Intensity of the shake
+
+        // Customize shake parameters based on the decision
+        switch (chapterManager.currentChapter)
+        {
+            case ChapterManager.Chapter.Chapter2:
+                if (option == DecisionOption.Option1)
+                {
+                    // Option 1: Divert power to shields - minor shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 0.8f);
+                }
+                else if (option == DecisionOption.Option2)
+                {
+                    // Option 2: Navigate carefully - more intense shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 1.2f);
+                }
+                break;
+
+            case ChapterManager.Chapter.Chapter3:
+                if (option == DecisionOption.Option1)
+                {
+                    // Option 1: Boost engines - moderate shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude);
+                }
+                else if (option == DecisionOption.Option2)
+                {
+                    // Option 2: Ride gravitational pull - intense shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 1.5f);
+                }
+                break;
+
+            case ChapterManager.Chapter.Chapter4:
+                if (option == DecisionOption.Option1)
+                {
+                    // Option 1: End game - strong shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 2f);
+                }
+                else if (option == DecisionOption.Option2)
+                {
+                    // Option 2: Start new journey - moderate shake
+                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude);
+                }
+                break;
+
+            default:
+                Debug.LogWarning("[DecisionPanelManager] Decision made in an unsupported chapter.");
+                break;
         }
     }
 }
