@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 363b0b048bb988a47a17b5e4fe9120ff, type: 2}
+  m_LightingDataAsset: {fileID: 112000000, guid: 3ce8bfbe139a1a341b72b2f491107ff4, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: e0ed1b152751116449ff602628a4a930, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -1664,7 +1664,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.4e-44, z: 7.036e-42, w: 1.0403e-41}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.3e-44, z: 1.0576e-41, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 5
@@ -2016,7 +2016,7 @@ Transform:
   m_GameObject: {fileID: 472691421}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.125, y: 9.875, z: 5.375}
+  m_LocalPosition: {x: -16.125, y: 9.875, z: 5.808}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10698,7 +10698,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.4e-44, z: 7.036e-42, w: 1.0403e-41}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.1e-44, z: 1.0248e-41, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 5
@@ -11350,6 +11350,22 @@ PrefabInstance:
     - target: {fileID: 782139922581601111, guid: 7a56b4286a5f18e43aecd74f868d1bb4, type: 3}
       propertyPath: m_Name
       value: Body_Bag
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616986608561461843, guid: 7a56b4286a5f18e43aecd74f868d1bb4, type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616986608561461843, guid: 7a56b4286a5f18e43aecd74f868d1bb4, type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 5450.1104
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616986608561461843, guid: 7a56b4286a5f18e43aecd74f868d1bb4, type: 3}
+      propertyPath: m_BoundingSphereOverride.y
+      value: 51837.58
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616986608561461843, guid: 7a56b4286a5f18e43aecd74f868d1bb4, type: 3}
+      propertyPath: m_BoundingSphereOverride.z
+      value: 1.1017134e+24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
