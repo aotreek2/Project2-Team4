@@ -2350,6 +2350,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3519787157226122692, guid: c8421c5f00d106844825923a0b6af850, type: 3}
       insertIndex: -1
       addedObject: {fileID: 403099724}
+    - targetCorrespondingSourceObject: {fileID: 3519787157226122692, guid: c8421c5f00d106844825923a0b6af850, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1529015849}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4292805011051755390, guid: c8421c5f00d106844825923a0b6af850, type: 3}
       insertIndex: -1
@@ -2388,7 +2391,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 3
   repairProgressBar: {fileID: 869145496}
-  repairPoint: {fileID: 403099724}
+  repairPoint: {fileID: 1529015849}
   baseRepairDuration: 10
   baseDeathChanceMultiplier: 0.05
   dialogueManager: {fileID: 1720415271}
@@ -3401,7 +3404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c99b785ee1e12f429a26b15c27ab3d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentChapter: 1
+  currentChapter: 3
   shipController: {fileID: 1285887424}
   decisionPanelManager: {fileID: 905132416}
   dialogueManager: {fileID: 1720415271}
@@ -18163,6 +18166,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 328772742}
+    - targetCorrespondingSourceObject: {fileID: 6468195548502385989, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1541906017}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5947132192605814783, guid: fcc7bc6c12392554c82812771d99d91e, type: 3}
       insertIndex: -1
@@ -18267,7 +18273,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   systemType: 1
   repairProgressBar: {fileID: 844919436}
-  repairPoint: {fileID: 328772742}
+  repairPoint: {fileID: 1541906017}
   baseRepairDuration: 10
   baseDeathChanceMultiplier: 0.05
   dialogueManager: {fileID: 1720415271}
@@ -23373,6 +23379,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4158318337484906271, guid: 632df7e3b2f78a94bab113078f119247, type: 3}
   m_PrefabInstance: {fileID: 1528228806}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1529015848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1529015849}
+  m_Layer: 9
+  m_Name: RepairPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1529015849
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1529015848}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -9.82}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 184864996}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1529895952
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23505,6 +23542,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1005039331999665599, guid: c24110bc2f1f8bb49bcffb9e1b2c3ac2, type: 3}
   m_PrefabInstance: {fileID: 1540339001}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1541906016
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1541906017}
+  m_Layer: 9
+  m_Name: Repair Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1541906017
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541906016}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -836, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1158778353}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1548033595
 PrefabInstance:
   m_ObjectHideFlags: 0
