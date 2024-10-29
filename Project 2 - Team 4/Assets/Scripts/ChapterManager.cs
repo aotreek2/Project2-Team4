@@ -20,6 +20,9 @@ public class ChapterManager : MonoBehaviour
 
     private Scene scene;
 
+    // Array of asteroid animations
+    public Animator[] asteroidEventAnim;
+
     void Start()
     {
         scene = SceneManager.GetActiveScene();
@@ -28,12 +31,22 @@ public class ChapterManager : MonoBehaviour
         StartCoroutine(StartChapterSequence());
     }
 
-        private void Update()
+    private void Update()
     {
         // Load Chapter 2 when F2 is pressed
         if (Input.GetKeyDown(KeyCode.F2))
         {
             LoadNextLevel("Chapter2Scene");
+        }
+        // Load Chapter 3 when F3 is pressed
+        else if (Input.GetKeyDown(KeyCode.F3))
+        {
+            LoadNextLevel("Chapter3Scene");
+        }
+        // Load Chapter 4 when F4 is pressed
+        else if (Input.GetKeyDown(KeyCode.F4))
+        {
+            LoadNextLevel("Chapter4Scene");
         }
     }
 
@@ -50,7 +63,7 @@ public class ChapterManager : MonoBehaviour
             case "Chapter3Scene":
                 currentChapter = Chapter.Chapter3;
                 break;
-            case "Chapter 4":
+            case "Chapter4":
                 currentChapter = Chapter.Chapter4;
                 break;
             default:
@@ -66,18 +79,20 @@ public class ChapterManager : MonoBehaviour
     {
         if (shipController == null)
             shipController = FindObjectOfType<ShipController>();
-        
+
         if (decisionPanelManager == null)
             decisionPanelManager = FindObjectOfType<DecisionPanelManager>();
-        
+
         if (dialogueManager == null)
             dialogueManager = FindObjectOfType<DialogueManager>();
-        
+
         if (chapterIntroUI == null)
             chapterIntroUI = FindObjectOfType<ChapterIntroUI>();
 
         if (mainCanvas == null)
             mainCanvas = GameObject.Find("MainCanvas"); // Assuming the main canvas is named "MainCanvas"
+
+        // asteroidEventAnim is assigned via the Unity Inspector, no need to initialize here
     }
 
     private IEnumerator StartChapterSequence()
@@ -158,11 +173,7 @@ public class ChapterManager : MonoBehaviour
             shipController.hullSystemController.hullHealth >= shipController.hullSystemController.hullMaxHealth
         );
 
-        Debug.Log("[WaitUntilSystemsFullyRepaired] All critical systems have been repaired. Proceeding to Chapter 2.");
-
-        yield return StartCoroutine(ChapterTwo());
-
-        LoadNextLevel("Chapter2Scene");
+        Debug.Log("[WaitUntilSystemsFullyRepaired] All critical systems have been repaired. Proceeding to the next chapter.");
     }
 
     private IEnumerator ChapterTwo()
@@ -181,6 +192,7 @@ public class ChapterManager : MonoBehaviour
             mainCanvas.SetActive(true);
         }
 
+        // Display decision panel for the asteroid field
         decisionPanelManager.OpenDecisionPanel(
             "An asteroid field is ahead! How do you proceed?",
             "Divert power to shields (Sacrifice 5 crew)",
@@ -188,11 +200,41 @@ public class ChapterManager : MonoBehaviour
             shipController
         );
 
+        // Wait until the player makes a decision
         yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
 
+        // Handle the decision outcome
         HandleAsteroidDecision();
 
-        yield return new WaitForSeconds(2f);
+        // Trigger the asteroid animation event
+        yield return StartCoroutine(TriggerAsteroidAnimationEvent());
+
+        // Wait until all critical systems are fully repaired before progressing to Chapter 3
+        yield return StartCoroutine(WaitUntilSystemsFullyRepaired());
+
+        // Now that both the asteroid decision and repairs are complete, load Chapter 3
+        LoadNextLevel("Chapter3Scene");
+    }
+
+    private IEnumerator TriggerAsteroidAnimationEvent()
+    {
+        if (asteroidEventAnim != null && asteroidEventAnim.Length > 0)
+        {
+            int asteroidSpawn = Random.Range(0, asteroidEventAnim.Length);
+            Animator selectedAnimator = asteroidEventAnim[asteroidSpawn];
+
+            selectedAnimator.SetTrigger("DoEvent"); // Ensure your Animator has this trigger
+
+            Debug.Log("[TriggerAsteroidAnimationEvent] Asteroid animation triggered.");
+
+            // Optionally, wait for the animation to complete
+            // If you have specific durations, you can use WaitForSeconds with known values
+            yield return null; // Remove this if you add a wait
+        }
+        else
+        {
+            Debug.LogWarning("[TriggerAsteroidAnimationEvent] No asteroid animations assigned.");
+        }
     }
 
     private IEnumerator ChapterThree()
