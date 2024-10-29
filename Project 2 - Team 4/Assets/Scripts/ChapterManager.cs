@@ -50,7 +50,7 @@ public class ChapterManager : MonoBehaviour
             case "Chapter3Scene":
                 currentChapter = Chapter.Chapter3;
                 break;
-            case "Chapter4Scene":
+            case "Chapter 4":
                 currentChapter = Chapter.Chapter4;
                 break;
             default:

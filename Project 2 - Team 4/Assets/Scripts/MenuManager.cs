@@ -70,6 +70,11 @@ public class MenuManager : MonoBehaviour
         Application.Quit();
     }
 
+    public void OnMainMenuButtonClicked()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
     public void MainMenuFlipper()
     {
         mainPanel.SetActive(!mainPanel.activeSelf);
