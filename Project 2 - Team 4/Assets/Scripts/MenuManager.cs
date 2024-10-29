@@ -12,17 +12,22 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject mainPanel, fadePanel;
 
     Animator camAnimator;
+    Scene scene;
 
     private void Start()
     {
-        mainPanel.SetActive(true);
+        scene = SceneManager.GetActiveScene();
 
-        camAnimator = gameObject.GetComponent<Animator>();
+        if(scene.name == "MainMenu")
+        {
+           mainPanel.SetActive(true);
+           camAnimator = gameObject.GetComponent<Animator>();
 
-        camAnimator.ResetTrigger("PlayHit");
-        camAnimator.ResetTrigger("HelpHit");
-        camAnimator.ResetTrigger("CreditsHit");
-        camAnimator.ResetTrigger("BackHit");
+           camAnimator.ResetTrigger("PlayHit");
+           camAnimator.ResetTrigger("HelpHit");
+           camAnimator.ResetTrigger("CreditsHit");
+           camAnimator.ResetTrigger("BackHit");
+        }
     }
 
     public void OnPlayButtonClicked()
