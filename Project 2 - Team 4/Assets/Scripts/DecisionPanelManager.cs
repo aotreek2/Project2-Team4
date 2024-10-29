@@ -1,4 +1,3 @@
-// DecisionPanelManager.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -28,6 +27,7 @@ public class DecisionPanelManager : MonoBehaviour
     private LifeSupportController lifeSupportController; // Reference to LifeSupportController
     private HullSystemController hullSystemController; // Reference to HullSystemController
     private EngineSystemController engineSystemController; // Reference to EngineSystemController
+    public bool isDecisionPanelOpen => decisionPanelCanvasGroup != null && decisionPanelCanvasGroup.interactable;
 
     private ChapterManager chapterManager;
 
@@ -185,6 +185,23 @@ public class DecisionPanelManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Fades in the decision panel and pauses the game.
+    /// </summary>
+    private IEnumerator FadeInAndPauseGame(float startAlpha, float endAlpha, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time to allow fade during pause
+            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            decisionPanelCanvasGroup.alpha = alpha;
+            yield return null;
+        }
+        decisionPanelCanvasGroup.alpha = endAlpha;
+        Time.timeScale = 0f; // Pauses the game
+    }
+
+    /// <summary>
     /// Handles the selection of Option 1.
     /// </summary>
     private void OnOption1Selected()
@@ -249,152 +266,37 @@ public class DecisionPanelManager : MonoBehaviour
     {
         if (option == DecisionOption.Option1)
         {
-            // Option 1: Divert power to shields (Sacrifice 5 crew)
-            shipController.SacrificeCrew(5);
-            hullSystemController.RepairHull(20f);
-            Debug.Log("Diverted power to shields. Sacrificed 5 crew.");
+            Debug.Log("[DecisionPanelManager] Option1 selected: Sacrificing crew for shield repair.");
+            shipController.SacrificeCrewForRepair(5, CubeInteraction.SystemType.Hull);
         }
         else if (option == DecisionOption.Option2)
         {
-            // Option 2: Navigate through carefully (Risk hull damage)
-            shipController.ApplyHullDamage(20f); // Changed from DamageHull to ApplyHullDamage
-            Debug.Log("Navigated carefully. Applied 20% hull damage risk.");
+            Debug.Log("[DecisionPanelManager] Option2 selected: Navigate Carefully.");
+            shipController.ApplyHullDamage(20f);
         }
     }
 
     /// <summary>
-    /// Handles decisions specific to Chapter 3.
+    /// Placeholder method for handling Chapter 3 decisions.
     /// </summary>
-    /// <param name="option">Selected option.</param>
     private void HandleChapter3Decision(DecisionOption option)
     {
-        if (option == DecisionOption.Option1)
-        {
-            // Option 1: Boost engines (Use extra fuel)
-            if (shipController.resourceManager != null)
-            {
-                shipController.resourceManager.AdjustFuel(-20f); // Changed from direct fuelAmount manipulation
-                shipController.resourceManager.UpdateResourceUI();
-            }
-            engineSystemController.RepairEngine(20f);
-            Debug.Log("Boosted engines. Used extra fuel.");
-        }
-        else if (option == DecisionOption.Option2)
-        {
-            // Option 2: Ride gravitational pull (Engine damaged)
-            engineSystemController.DamageEngine(30f);
-            Debug.Log("Rode gravitational pull. Engine damaged.");
-        }
+        Debug.Log("[DecisionPanelManager] Handling Chapter 3 decision.");
+        // Add logic for Chapter 3 decisions here.
     }
 
     /// <summary>
-    /// Handles decisions specific to Chapter 4.
+    /// Placeholder method for handling Chapter 4 decisions.
     /// </summary>
-    /// <param name="option">Selected option.</param>
     private void HandleChapter4Decision(DecisionOption option)
     {
-        if (option == DecisionOption.Option1)
-        {
-            // Option 1: End game (Dock safely)
-            SceneManager.LoadScene("MainMenu");
-            Debug.Log("Docked safely. Game ends.");
-        }
-        else if (option == DecisionOption.Option2)
-        {
-            // Option 2: Start new journey
-            SceneManager.LoadScene("Chapter1Scene"); // Ensure correct scene name
-            Debug.Log("Broadcasted message and left. New journey begins.");
-        }
-    }
-
-    /// <summary>
-    /// Coroutine to fade in the decision panel and pause the game.
-    /// </summary>
-    /// <param name="startAlpha">Starting alpha value.</param>
-    /// <param name="endAlpha">Ending alpha value.</param>
-    /// <param name="duration">Duration of the fade.</param>
-    /// <returns></returns>
-    private IEnumerator FadeInAndPauseGame(float startAlpha, float endAlpha, float duration)
-    {
-        Debug.Log("[DecisionPanelManager] Starting fade-in and pausing the game.");
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time to allow fade during pause
-            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
-            decisionPanelCanvasGroup.alpha = alpha;
-            yield return null;
-        }
-
-        decisionPanelCanvasGroup.alpha = endAlpha;
-
-        // Pause the game
-        Time.timeScale = 0f;
-        Debug.Log("[DecisionPanelManager] Game paused.");
-    }
-
-    /// <summary>
-    /// Coroutine to fade out the decision panel and resume the game.
-    /// </summary>
-    /// <param name="startAlpha">Starting alpha value.</param>
-    /// <param name="endAlpha">Ending alpha value.</param>
-    /// <param name="duration">Duration of the fade.</param>
-    /// <returns></returns>
-    private IEnumerator FadeOutAndResumeGame(float startAlpha, float endAlpha, float duration)
-    {
-        Debug.Log("[DecisionPanelManager] Starting fade-out and resuming the game.");
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time to allow fade during pause
-            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
-            decisionPanelCanvasGroup.alpha = alpha;
-            yield return null;
-        }
-
-        decisionPanelCanvasGroup.alpha = endAlpha;
-
-        // Resume the game
-        Time.timeScale = 1f;
-        Debug.Log("[DecisionPanelManager] Game resumed.");
-    }
-
-    /// <summary>
-    /// Closes the decision panel with a fade-out animation and resumes the game.
-    /// </summary>
-    public void CloseDecisionPanel()
-    {
-        Debug.Log("[DecisionPanelManager] Closing Decision Panel.");
-        StartCoroutine(FadeOutAndResumeGame(1f, 0f, 0.5f)); // 0.5s fade duration
-
-        // Hide the dark overlay
-        if (darkOverlay != null)
-        {
-            darkOverlay.gameObject.SetActive(false);
-        }
-        else
-        {
-            Debug.LogError("[DecisionPanelManager] darkOverlay is not assigned.");
-        }
-
-        // Make the panel non-interactable
-        if (decisionPanelCanvasGroup != null)
-        {
-            decisionPanelCanvasGroup.interactable = false;
-            decisionPanelCanvasGroup.blocksRaycasts = false;
-        }
-        else
-        {
-            Debug.LogError("[DecisionPanelManager] decisionPanelCanvasGroup is not assigned.");
-        }
+        Debug.Log("[DecisionPanelManager] Handling Chapter 4 decision.");
+        // Add logic for Chapter 4 decisions here.
     }
 
     /// <summary>
     /// Triggers camera shake based on the selected decision option.
     /// </summary>
-    /// <param name="option">The selected decision option.</param>
     private void TriggerCameraShakeBasedOnDecision(DecisionOption option)
     {
         if (cameraController == null)
@@ -403,54 +305,47 @@ public class DecisionPanelManager : MonoBehaviour
             return;
         }
 
-        float shakeDuration = 0.5f; // Duration of the shake in seconds
-        float shakeMagnitude = 0.3f; // Intensity of the shake
+        float shakeDuration = 0.5f;
+        float shakeMagnitude = 0.3f;
 
-        // Customize shake parameters based on the decision
-        switch (chapterManager.currentChapter)
+        if (option == DecisionOption.Option1)
         {
-            case ChapterManager.Chapter.Chapter2:
-                if (option == DecisionOption.Option1)
-                {
-                    // Option 1: Divert power to shields - minor shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 0.8f);
-                }
-                else if (option == DecisionOption.Option2)
-                {
-                    // Option 2: Navigate carefully - more intense shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 1.2f);
-                }
-                break;
-
-            case ChapterManager.Chapter.Chapter3:
-                if (option == DecisionOption.Option1)
-                {
-                    // Option 1: Boost engines - moderate shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude);
-                }
-                else if (option == DecisionOption.Option2)
-                {
-                    // Option 2: Ride gravitational pull - intense shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 1.5f);
-                }
-                break;
-
-            case ChapterManager.Chapter.Chapter4:
-                if (option == DecisionOption.Option1)
-                {
-                    // Option 1: End game - strong shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 2f);
-                }
-                else if (option == DecisionOption.Option2)
-                {
-                    // Option 2: Start new journey - moderate shake
-                    cameraController.ShakeCamera(shakeDuration, shakeMagnitude);
-                }
-                break;
-
-            default:
-                Debug.LogWarning("[DecisionPanelManager] Decision made in an unsupported chapter.");
-                break;
+            cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 0.8f);
         }
+        else if (option == DecisionOption.Option2)
+        {
+            cameraController.ShakeCamera(shakeDuration, shakeMagnitude * 1.2f);
+        }
+    }
+
+    /// <summary>
+    /// Closes the decision panel and resumes the game.
+    /// </summary>
+    private void CloseDecisionPanel()
+    {
+        StartCoroutine(FadeOutAndResumeGame(1f, 0f, 0.5f)); // Fade out and resume game
+        if (darkOverlay != null) darkOverlay.gameObject.SetActive(false);
+        if (decisionPanelCanvasGroup != null)
+        {
+            decisionPanelCanvasGroup.interactable = false;
+            decisionPanelCanvasGroup.blocksRaycasts = false;
+        }
+    }
+
+    /// <summary>
+    /// Coroutine to fade out the decision panel and resume the game.
+    /// </summary>
+    private IEnumerator FadeOutAndResumeGame(float startAlpha, float endAlpha, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            decisionPanelCanvasGroup.alpha = alpha;
+            yield return null;
+        }
+        decisionPanelCanvasGroup.alpha = endAlpha;
+        Time.timeScale = 1f; // Resumes the game
     }
 }

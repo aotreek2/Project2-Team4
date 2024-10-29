@@ -1,7 +1,7 @@
-// ResourceManager.cs
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement; // Added to resolve SceneManager errors
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -40,6 +40,9 @@ public class ResourceManager : MonoBehaviour
 
     // Variable to control if systems are active
     public bool systemsActive = true;
+
+    [Header("Crew Management")]
+    public List<CrewMember> crewMembers = new List<CrewMember>();
 
     void Start()
     {
@@ -179,7 +182,7 @@ public class ResourceManager : MonoBehaviour
     /// Adjusts fuel resources by a specified amount.
     /// </summary>
     /// <param name="amount">Amount of fuel to adjust.</param>
-    public void AdjustFuel(float amount) // Changed method name from AddFuel to AdjustFuel if needed
+    public void AdjustFuel(float amount)
     {
         fuelAmount += amount;
         fuelAmount = Mathf.Clamp(fuelAmount, 0f, 100f); // Adjust max as needed
@@ -203,20 +206,85 @@ public class ResourceManager : MonoBehaviour
     /// Sacrifices a specified number of crew members.
     /// </summary>
     /// <param name="amount">Number of crew members to sacrifice.</param>
-    public void SacrificeCrew(int amount) // Ensure this method is public
+    public bool SacrificeCrew(int amount)
     {
         if (crewCount >= amount)
         {
             crewCount -= amount;
             UpdateResourceUI();
             Debug.Log($"[ResourceManager] Sacrificed {amount} crew members. Remaining crew: {crewCount}");
+            return true;
         }
         else
         {
             Debug.LogWarning("[ResourceManager] Not enough crew members to sacrifice.");
             // Optionally, trigger an alert
             AlertManager.Instance?.ShowAlert("Not enough crew members to sacrifice.");
+            return false;
         }
+    }
+
+    /// <summary>
+    /// Assigns and sacrifices a specified number of crew members to the generator.
+    /// </summary>
+    /// <param name="amount">Number of crew members to assign and sacrifice.</param>
+    /// <param name="generator">The generator to which crew are assigned.</param>
+    public bool AssignAndSacrificeCrew(int amount, GeneratorController generator)
+    {
+        if (crewCount >= amount && crewMembers.Count >= amount)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                if (crewMembers.Count > 0)
+                {
+                    CrewMember member = crewMembers[0];
+                    crewMembers.RemoveAt(0);
+                    generator.AssignCrew(member);
+                    bool sacrificed = SacrificeCrew(1); // Sacrifice one crew member
+                    if (sacrificed)
+                    {
+                        member.Die(); // Handle crew death animation
+                    }
+                }
+            }
+            UpdateResourceUI();
+            Debug.Log($"[ResourceManager] Assigned and sacrificed {amount} crew members to Generator.");
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning("[ResourceManager] Not enough crew members to assign and sacrifice.");
+            AlertManager.Instance?.ShowAlert("Not enough crew members to assign and sacrifice.");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Adjusts crew morale by a specified amount.
+    /// </summary>
+    /// <param name="amount">Amount to adjust morale by.</param>
+    public void AdjustMorale(float amount)
+    {
+        if (shipController != null)
+        {
+            shipController.AdjustCrewMorale(amount);
+        }
+        else
+        {
+            Debug.LogError("[ResourceManager] ShipController is not assigned.");
+        }
+    }
+
+    /// <summary>
+    /// Adds a specified number of crew members.
+    /// </summary>
+    /// <param name="amount">Number of crew members to add.</param>
+    public void AddCrew(int amount)
+    {
+        crewCount += amount;
+        // Optionally, instantiate new CrewMember GameObjects and add to crewMembers list
+        UpdateResourceUI();
+        Debug.Log($"[ResourceManager] Added {amount} crew members. Total crew: {crewCount}");
     }
 
     // Add other resource management methods as needed

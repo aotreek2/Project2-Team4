@@ -1,4 +1,3 @@
-// CrewMember.cs
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -22,8 +21,7 @@ public class CrewMember : MonoBehaviour
     private Animator crewAnim;
     public Image crewSelectedDot;
     private NavMeshAgent navAgent;
-    private bool isPerformingTask = false;
-    private CubeInteraction currentCubeInteraction; // Reference to the system being repaired
+    public bool isPerformingTask = false; // Made public for GeneratorController access
     private Transform currentRepairPoint; // Current target repair point
 
     public Renderer crewRenderer;
@@ -230,27 +228,17 @@ public class CrewMember : MonoBehaviour
         }
     }
 
-    // Assign the crew member to a repair system
-    public void AssignToRepairPoint(CubeInteraction cubeInteraction)
+    // Assign the crew member to the generator
+    public void AssignToGenerator(GeneratorController generator)
     {
-        if (currentCubeInteraction != null)
+        if (currentTask != Task.Idle)
         {
-            Debug.LogWarning($"[AssignToRepairPoint] Crew member {crewName} is already assigned to a repair task.");
+            Debug.LogWarning($"[AssignToGenerator] {crewName} is already assigned to a task.");
             return;
         }
 
-        // Stop wandering
-        if (navAgent != null && navAgent.hasPath)
-        {
-            navAgent.ResetPath();
-            Debug.Log($"[AssignToRepairPoint] {crewName}'s current path has been reset.");
-        }
-
-        currentCubeInteraction = cubeInteraction;
-        currentRepairPoint = cubeInteraction.repairPoint;
-
-        currentTask = DetermineTaskType(cubeInteraction.systemType);
-        Debug.Log($"[AssignToRepairPoint] {crewName} assigned to task {currentTask}");
+        currentTask = Task.RepairGenerator;
+        currentRepairPoint = generator.transform; // Assuming generator has a transform to move towards
 
         if (navAgent != null && currentRepairPoint != null)
         {
@@ -258,33 +246,29 @@ public class CrewMember : MonoBehaviour
             if (destinationSet)
             {
                 navAgent.stoppingDistance = repairStartThreshold;
-                // Optionally, set 'isMoving' to true
-                // crewAnim?.SetBool("isMoving", true);
                 navAgent.isStopped = false;
-                Debug.Log($"[AssignToRepairPoint] {crewName} is moving towards {currentRepairPoint.position}");
+                Debug.Log($"[AssignToGenerator] {crewName} is moving towards the Generator.");
 
                 if (walkingSFX != null && !walkingSFX.isPlaying)
                 {
                     walkingSFX.Play();
-                    Debug.Log($"[AssignToRepairPoint] Walking sound played for {crewName}");
+                    Debug.Log($"[AssignToGenerator] Walking sound played for {crewName}");
                 }
 
                 // Change the crew member's color to indicate assignment
                 if (crewRenderer != null)
                 {
                     crewRenderer.material.color = Color.yellow;
-                    Debug.Log($"[AssignToRepairPoint] {crewName}'s color changed to yellow");
+                    Debug.Log($"[AssignToGenerator] {crewName}'s color changed to yellow");
                 }
 
-                // Optional: Add a debug log to confirm assignment
-                Debug.Log($"[AssignToRepairPoint] Crew member {crewName} assigned to system: {cubeInteraction.systemType}");
+                // Optionally, inform the generator
+                generator.AssignCrew(this);
             }
             else
             {
-                Debug.LogError($"[AssignToRepairPoint] Crew member {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the repair point is on the NavMesh.");
-                // Optionally, reset the task to Idle if destination setting fails
+                Debug.LogError($"[AssignToGenerator] {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the Generator is on the NavMesh.");
                 currentTask = Task.Idle;
-                currentCubeInteraction = null;
                 currentRepairPoint = null;
             }
         }
@@ -309,7 +293,7 @@ public class CrewMember : MonoBehaviour
 
     private void StartRepair()
     {
-        if (isPerformingTask || currentCubeInteraction == null)
+        if (isPerformingTask || currentRepairPoint == null)
             return;
 
         isPerformingTask = true;
@@ -317,8 +301,17 @@ public class CrewMember : MonoBehaviour
         navAgent.isStopped = true;
         Debug.Log($"[StartRepair] {crewName} started repairing {currentTask}");
 
-        // Start the repair process via CubeInteraction
-        currentCubeInteraction.StartRepair(this, efficiency);
+        // Start the repair process via GeneratorController
+        GeneratorController generator = currentRepairPoint.GetComponent<GeneratorController>();
+        if (generator != null)
+        {
+            generator.StartRepair(this, efficiency);
+        }
+        else
+        {
+            Debug.LogError($"[StartRepair] Could not find GeneratorController on {currentRepairPoint.name}");
+            CompleteTask(); // Reset task if generator not found
+        }
     }
 
     public void CompleteTask()
@@ -326,7 +319,6 @@ public class CrewMember : MonoBehaviour
         isPerformingTask = false;
         currentTask = Task.Idle;
         navAgent.isStopped = false;
-        currentCubeInteraction = null;
         currentRepairPoint = null;
 
         // Reset the crew member's color after completing the task
@@ -544,6 +536,16 @@ public class CrewMember : MonoBehaviour
                     walkingSFX.Play();
                     Debug.Log($"[MoveTowardsRepairPoint] Walking sound played for {crewName}");
                 }
+
+                // Change the crew member's color to indicate assignment
+                if (crewRenderer != null)
+                {
+                    crewRenderer.material.color = Color.yellow;
+                    Debug.Log($"[MoveTowardsRepairPoint] {crewName}'s color changed to yellow");
+                }
+
+                // Optional: Add a debug log to confirm assignment
+                Debug.Log($"[MoveTowardsRepairPoint] Crew member {crewName} assigned to task: {currentTask}");
             }
             else
             {
@@ -551,4 +553,16 @@ public class CrewMember : MonoBehaviour
             }
         }
     }
+
+        public void AssignToRepairPoint(CubeInteraction cubeInteraction)
+        {
+            // Implement logic for moving the crew member to the repair point
+            // For example, set position to the repair point of CubeInteraction
+            if (cubeInteraction.repairPoint != null)
+            {
+                transform.position = cubeInteraction.repairPoint.position;
+                Debug.Log($"CrewMember: Assigned to repair point of {cubeInteraction.systemType}.");
+            }
+        }
+
 }

@@ -1,3 +1,4 @@
+// DialogueManager.cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,10 +21,17 @@ public class DialogueManager : MonoBehaviour
     public float typingSpeed = 0.05f; // Speed at which characters are typed out
     public float fadeDuration = 0.5f; // Duration for fade in/out
 
+    [Header("Audio Components")]
+    public AudioSource dialogueAudioSource; // AudioSource for dialogue sounds
+    public AudioClip typingSound; // Sound played while typing
+
     public bool isDialogueActive { get; private set; }
     private bool isIntroCompleted = false; // Flag to indicate if the intro dialogue is finished
     private bool isTyping = false; // Flag to indicate if typing is in progress
     private Coroutine typingCoroutine; // Reference to the current typing coroutine
+
+    // Dialogue data structured by chapter and event
+    private Dictionary<string, List<string>> dialogues = new Dictionary<string, List<string>>();
 
     void Start()
     {
@@ -95,6 +103,49 @@ public class DialogueManager : MonoBehaviour
             dialogueBackgroundImage.color = new Color(0, 0, 0, 0.7f); // Semi-transparent black
             Debug.Log("DialogueManager: Dialogue background image color set to semi-transparent black.");
         }
+
+        // Initialize all dialogues
+        InitializeDialogues();
+    }
+
+    /// <summary>
+    /// Initializes all dialogues for different chapters and events.
+    /// </summary>
+    private void InitializeDialogues()
+    {
+        Debug.Log("DialogueManager: Initializing dialogues.");
+
+        // Chapter 1 Dialogues
+        dialogues.Add("Chapter1_Event1", new List<string>
+        {
+            "Welcome aboard, Captain.",
+            "Our mission is to reach the lighthouse safely.",
+            "Ensure all systems are operational."
+        });
+
+        // Chapter 2 Dialogues - Asteroid Field Event
+        dialogues.Add("Chapter2_AsteroidField", new List<string>
+        {
+            "Captain, sensors have detected an incoming asteroid field.",
+            "Navigating through it poses significant risks.",
+            "We need to decide our course of action swiftly."
+        });
+
+        // Chapter 3 Dialogues
+        dialogues.Add("Chapter3_Event1", new List<string>
+        {
+            "A gravitational anomaly is affecting our trajectory.",
+            "We must adjust the engines to compensate."
+        });
+
+        // Chapter 4 Dialogues
+        dialogues.Add("Chapter4_Event1", new List<string>
+        {
+            "We've reached the final approach.",
+            "Prepare for docking or set a new course for exploration."
+        });
+
+        // Add more dialogues as needed
     }
 
     /// <summary>
@@ -213,6 +264,10 @@ public class DialogueManager : MonoBehaviour
             }
 
             dialogueText.text += letter;  // Add one letter at a time
+            if (typingSound != null && dialogueAudioSource != null)
+            {
+                dialogueAudioSource.PlayOneShot(typingSound);
+            }
             yield return new WaitForSeconds(typingSpeed);  // Wait for typing speed interval
         }
 
