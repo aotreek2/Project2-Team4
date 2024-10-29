@@ -16447,8 +16447,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9398afb0c9e8a994692004eebedb6f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 0.005
 --- !u!4 &498873729
 Transform:
   m_ObjectHideFlags: 0
@@ -17379,15 +17377,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   decisionPanelCanvasGroup: {fileID: 558476811}
-  decisionAudioSource: {fileID: 0}
-  decisionOpenSound: {fileID: 8300000, guid: ea6e2f3e5a35fae42b114188058b8f70, type: 3}
-  decisionCloseSound: {fileID: 8300000, guid: b47fbde2363925d4da002067a03d7074, type: 3}
   darkOverlay: {fileID: 33611917}
   decisionDescriptionText: {fileID: 1902466455}
   option1Text: {fileID: 1946196938}
   option2Text: {fileID: 1366179982}
   option1Button: {fileID: 1517375915}
   option2Button: {fileID: 1163657973}
+  decisionAudioSource: {fileID: 0}
+  decisionOpenSound: {fileID: 8300000, guid: ea6e2f3e5a35fae42b114188058b8f70, type: 3}
+  decisionCloseSound: {fileID: 8300000, guid: b47fbde2363925d4da002067a03d7074, type: 3}
+  shipController: {fileID: 0}
+  cameraController: {fileID: 0}
 --- !u!114 &558476813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19592,8 +19592,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crewMorale: 100
-  crewCount: 20
-  generatorCube: {fileID: 866386891}
   resourceManager: {fileID: 693353946}
   hullDamageSound: {fileID: 8300000, guid: 5d2557ef716981e429b9ca1c62f36cf4, type: 3}
   audioSource: {fileID: 693353945}
@@ -19713,9 +19711,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e403a2a9723acc4488c21bc41e2fa58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  oxygenLevel: 100
+  crewCount: 20
   fuelAmount: 100
+  oxygenLevel: 100
   distanceToLighthouse: 1000
+  scrapAmount: 50
   engineEfficiency: 1
   lifeSupportEfficiency: 1
   generatorEfficiency: 1
@@ -19723,9 +19723,9 @@ MonoBehaviour:
   fuelDepletionMultiplier: 0.5
   baseOxygenConsumptionRate: 1
   oxygenRecoveryRate: 5
-  scrapAmount: 50
+  crewCountText: {fileID: 0}
+  fuelAmountText: {fileID: 0}
   oxygenText: {fileID: 683329524}
-  fuelText: {fileID: 234835582}
   distanceText: {fileID: 897039473}
   scrapText: {fileID: 700243940}
   moraleText: {fileID: 1924064737}
@@ -19733,6 +19733,7 @@ MonoBehaviour:
   lifeSupportController: {fileID: 357826081}
   chapterManager: {fileID: 1224771093}
   systemsActive: 1
+  crewMembers: []
 --- !u!114 &693353947
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19876,6 +19877,7 @@ MonoBehaviour:
   lifeSupportController: {fileID: 357826081}
   hullSystemController: {fileID: 74618941}
   engineSystemController: {fileID: 816083245}
+  generatorController: {fileID: 0}
   decisionManager: {fileID: 558476812}
   chapterManager: {fileID: 1224771093}
   eventAudio: {fileID: 693353945}
@@ -19885,6 +19887,7 @@ MonoBehaviour:
   - {fileID: 98340720}
   - {fileID: 1494374181}
   derelictShipAnim: {fileID: 546948162}
+  resourceManager: {fileID: 0}
 --- !u!4 &693353951
 Transform:
   m_ObjectHideFlags: 0
@@ -22349,6 +22352,7 @@ MonoBehaviour:
   damageHotkey: 45
   repairHotkey: 61
   healthChangeAmount: 10
+  assignedCrew: []
 --- !u!4 &866666942 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6726822319229558511, guid: 3632e78a31bf33147a835e6ccfa58371, type: 3}
@@ -27690,12 +27694,11 @@ MonoBehaviour:
   shipController: {fileID: 693353944}
   decisionPanelManager: {fileID: 0}
   dialogueManager: {fileID: 1926695370}
-  systemHighlighter: {fileID: 498873728}
   chapterIntroUI: {fileID: 1224771092}
+  mainCanvas: {fileID: 0}
   initialLifeSupportDamage: 50
   initialEngineDamage: 60
   initialHullDamage: 70
-  crossFade: {fileID: 523923331}
 --- !u!114 &1224771094
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35625,12 +35628,12 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1817018576}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 1361134961056631150, guid: 32ebf035977e0a341ab22a3051495a6c, type: 2}
-  m_audioClip: {fileID: 8300000, guid: 43cc1ef6bf8e5a343a1684dee72c36ea, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 6200b25be70c34d4e810007d22140986, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.326
+  m_Volume: 0.2
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -37440,6 +37443,8 @@ MonoBehaviour:
   selectedSystemText: {fileID: 1949837668}
   typingSpeed: 0.05
   fadeDuration: 0.5
+  dialogueAudioSource: {fileID: 0}
+  typingSound: {fileID: 0}
 --- !u!224 &1926695371
 RectTransform:
   m_ObjectHideFlags: 0
