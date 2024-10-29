@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private GameObject helpPanel, creditsPanel, mainPanel;
+    [SerializeField] private GameObject mainPanel, fadePanel;
 
     Animator camAnimator;
 
     private void Start()
     {
-        helpPanel.SetActive(false);
-        creditsPanel.SetActive(false);
         mainPanel.SetActive(true);
 
         camAnimator = gameObject.GetComponent<Animator>();
@@ -25,45 +27,26 @@ public class MenuManager : MonoBehaviour
 
     public void OnPlayButtonClicked()
     {
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         camAnimator.SetTrigger("PlayHit");
         camAnimator.ResetTrigger("BackHit");
-
-        //mainPanel.SetActive(false);
     }
     public void OnHelpButtonClicked()
     {
-        //helpPanel.SetActive(true);
         camAnimator.SetTrigger("HelpHit");
         camAnimator.ResetTrigger("BackHit");
-
-        //mainPanel.SetActive(false);
     }
     public void OnCreditsButtonClicked()
     {
-        //creditsPanel.SetActive(true);
         camAnimator.SetTrigger("CreditsHit");
         camAnimator.ResetTrigger("BackHit");
-
-        //mainPanel.SetActive(false);
     }
     public void OnBackButtonClicked()
     {
-        /*
-        if(helpPanel.activeSelf == true || creditsPanel.activeSelf == true)
-        {
-            helpPanel.SetActive(false);
-            creditsPanel.SetActive(false);
-        }
-        */
         camAnimator.SetTrigger("BackHit");
 
         camAnimator.ResetTrigger("PlayHit");
         camAnimator.ResetTrigger("HelpHit");
         camAnimator.ResetTrigger("CreditsHit");
-        
-
-        //mainPanel.SetActive(true);
     }
     public void OnQuitButtonClicked()
     {
@@ -72,11 +55,21 @@ public class MenuManager : MonoBehaviour
 
     public void OnMainMenuButtonClicked()
     {
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene(0);
     }
 
     public void MainMenuFlipper()
     {
         mainPanel.SetActive(!mainPanel.activeSelf);
+    }
+
+    public void PlayFadeOut()
+    {
+        fadePanel.SetActive(true);
+    }
+
+    public void NextScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
