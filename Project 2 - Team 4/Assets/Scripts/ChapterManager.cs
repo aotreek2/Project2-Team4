@@ -1,4 +1,3 @@
-// ChapterManager.cs
 using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -12,6 +11,7 @@ public class ChapterManager : MonoBehaviour
     public DecisionPanelManager decisionPanelManager;
     public DialogueManager dialogueManager; // Reference to DialogueManager for dialogue control
     public ChapterIntroUI chapterIntroUI; // Reference to ChapterIntroUI for cinematic intro
+    public GameObject mainCanvas; // Reference to the main canvas to hide/show
 
     // Damage levels for starting state
     public float initialLifeSupportDamage = 50f; // Life Support starts at 50% health
@@ -19,7 +19,6 @@ public class ChapterManager : MonoBehaviour
     public float initialHullDamage = 70f; // Hull starts at 70% health
 
     private Scene scene;
-    public Animator crossFade;
 
     void Start()
     {
@@ -29,13 +28,17 @@ public class ChapterManager : MonoBehaviour
         StartCoroutine(StartChapterSequence());
     }
 
-    /// <summary>
-    /// Determines the current chapter based on the active scene's name.
-    /// Ensure that your scene names correspond to "Chapter1Scene", "Chapter2Scene", etc.
-    /// </summary>
+        private void Update()
+    {
+        // Load Chapter 2 when F2 is pressed
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            LoadNextLevel("Chapter2Scene");
+        }
+    }
+
     private void DetermineCurrentChapter()
     {
-        // Map scene names to chapters
         switch (scene.name)
         {
             case "Chapter1Scene":
@@ -59,56 +62,24 @@ public class ChapterManager : MonoBehaviour
         Debug.Log($"[DetermineCurrentChapter] Current Chapter set to: {currentChapter}");
     }
 
-    /// <summary>
-    /// Initializes component references, ensuring they are assigned either via the Inspector or found in the scene.
-    /// </summary>
     private void InitializeComponents()
     {
         if (shipController == null)
             shipController = FindObjectOfType<ShipController>();
-        else
-            Debug.Log("[InitializeComponents] ShipController assigned via Inspector.");
-
+        
         if (decisionPanelManager == null)
             decisionPanelManager = FindObjectOfType<DecisionPanelManager>();
-        else
-            Debug.Log("[InitializeComponents] DecisionPanelManager assigned via Inspector.");
-
+        
         if (dialogueManager == null)
             dialogueManager = FindObjectOfType<DialogueManager>();
-        else
-            Debug.Log("[InitializeComponents] DialogueManager assigned via Inspector.");
-
+        
         if (chapterIntroUI == null)
             chapterIntroUI = FindObjectOfType<ChapterIntroUI>();
-        else
-            Debug.Log("[InitializeComponents] ChapterIntroUI assigned via Inspector.");
 
-        if (crossFade == null)
-            crossFade = GetComponent<Animator>(); // Assuming crossFade is part of the same GameObject
-        else
-            Debug.Log("[InitializeComponents] CrossFade Animator assigned via Inspector.");
-
-        // Verify all components are assigned
-        if (shipController == null)
-            Debug.LogError("[InitializeComponents] ShipController is not assigned or found in the scene.");
-
-        if (decisionPanelManager == null)
-            Debug.LogError("[InitializeComponents] DecisionPanelManager is not assigned or found in the scene.");
-
-        if (dialogueManager == null)
-            Debug.LogError("[InitializeComponents] DialogueManager is not assigned or found in the scene.");
-
-        if (chapterIntroUI == null)
-            Debug.LogError("[InitializeComponents] ChapterIntroUI is not assigned or found in the scene.");
-
-        if (crossFade == null)
-            Debug.LogError("[InitializeComponents] CrossFade Animator is not assigned.");
+        if (mainCanvas == null)
+            mainCanvas = GameObject.Find("MainCanvas"); // Assuming the main canvas is named "MainCanvas"
     }
 
-    /// <summary>
-    /// Starts the chapter sequence based on the current chapter.
-    /// </summary>
     private IEnumerator StartChapterSequence()
     {
         switch (currentChapter)
@@ -132,20 +103,26 @@ public class ChapterManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Coroutine for Chapter 1 sequence.
-    /// </summary>
     private IEnumerator ChapterOne()
     {
         currentChapter = Chapter.Chapter1;
 
-        // Damage the ship systems at the start of Chapter 1
         ApplyInitialDamageToSystems();
 
-        // Display Chapter 1 title and subtext with cinematic intro
+        // Hide the main canvas during the chapter intro
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(false);
+        }
+
         yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 1", "Repair Critical Systems"));
 
-        // Show additional guidance dialogue after Chapter UI is done
+        // Re-enable the main canvas after the chapter intro
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(true);
+        }
+
         string[] dialogueLines = new string[]
         {
             "Alert! Critical systems are damaged.",
@@ -153,16 +130,11 @@ public class ChapterManager : MonoBehaviour
             "Select a crew member and assign them to a system to begin repairs."
         };
 
-        // Start the dialogue
         dialogueManager.StartDialogue(dialogueLines, CubeInteraction.SystemType.LifeSupport);
 
-        // Wait for the dialogue to finish
         yield return new WaitUntil(() => !dialogueManager.isDialogueActive);
     }
 
-    /// <summary>
-    /// Applies initial damage to the ship systems to simulate a damaged state.
-    /// </summary>
     private void ApplyInitialDamageToSystems()
     {
         if (shipController != null)
@@ -178,38 +150,37 @@ public class ChapterManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Coroutine that waits until all critical systems are fully repaired.
-    /// </summary>
     private IEnumerator WaitUntilSystemsFullyRepaired()
     {
-        // Wait for all critical systems to be repaired to 100%
         yield return new WaitUntil(() =>
             shipController.lifeSupportController.lifeSupportHealth >= shipController.lifeSupportController.lifeSupportMaxHealth &&
             shipController.engineSystemController.engineHealth >= shipController.engineSystemController.engineMaxHealth &&
             shipController.hullSystemController.hullHealth >= shipController.hullSystemController.hullMaxHealth
         );
 
-        Debug.Log("[WaitUntilSystemsFullyRepaired] All critical systems have been repaired.");
+        Debug.Log("[WaitUntilSystemsFullyRepaired] All critical systems have been repaired. Proceeding to Chapter 2.");
 
-        // Proceed to Chapter 2
         yield return StartCoroutine(ChapterTwo());
 
-        // Proceed to load the next level after Chapter 2
-        LoadNextLevel();
+        LoadNextLevel("Chapter2Scene");
     }
 
-    /// <summary>
-    /// Coroutine for Chapter 2 sequence.
-    /// </summary>
     private IEnumerator ChapterTwo()
     {
         currentChapter = Chapter.Chapter2;
 
-        // Display Chapter 2 intro with cinematic text
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(false);
+        }
+
         yield return StartCoroutine(chapterIntroUI.DisplayChapterIntro("CHAPTER 2", "Asteroid Field Ahead"));
 
-        // Trigger asteroid event decision after intro
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(true);
+        }
+
         decisionPanelManager.OpenDecisionPanel(
             "An asteroid field is ahead! How do you proceed?",
             "Divert power to shields (Sacrifice 5 crew)",
@@ -217,19 +188,13 @@ public class ChapterManager : MonoBehaviour
             shipController
         );
 
-        // Wait for the decision to be made
         yield return new WaitUntil(() => decisionPanelManager.IsDecisionMade);
 
-        // Handle the outcome of the decision here
         HandleAsteroidDecision();
 
-        // Proceed to the next chapter after a short delay
         yield return new WaitForSeconds(2f);
     }
 
-    /// <summary>
-    /// Coroutine for Chapter 3 sequence.
-    /// </summary>
     private IEnumerator ChapterThree()
     {
         currentChapter = Chapter.Chapter3;
@@ -238,9 +203,6 @@ public class ChapterManager : MonoBehaviour
         yield break;
     }
 
-    /// <summary>
-    /// Coroutine for Chapter 4 sequence.
-    /// </summary>
     private IEnumerator ChapterFour()
     {
         currentChapter = Chapter.Chapter4;
@@ -249,9 +211,6 @@ public class ChapterManager : MonoBehaviour
         yield break;
     }
 
-    /// <summary>
-    /// Handles the outcome of the asteroid field decision made in Chapter 2.
-    /// </summary>
     private void HandleAsteroidDecision()
     {
         if (decisionPanelManager == null)
@@ -267,20 +226,16 @@ public class ChapterManager : MonoBehaviour
             case Chapter.Chapter2:
                 if (selectedOption == DecisionPanelManager.DecisionOption.Option1)
                 {
-                    // Divert power to shields: Sacrifice 5 crew
                     shipController.SacrificeCrew(5);
-                    // Optionally, provide feedback to the player
                     Debug.Log("[HandleAsteroidDecision] Diverted power to shields. Sacrificed 5 crew members.");
                 }
                 else if (selectedOption == DecisionPanelManager.DecisionOption.Option2)
                 {
-                    // Navigate through carefully: Risk hull damage
-                    shipController.ApplyHullDamage(20f); // Now defined in ShipController
+                    shipController.ApplyHullDamage(20f);
                     Debug.Log("[HandleAsteroidDecision] Navigated carefully. Applied 20% hull damage risk.");
                 }
                 break;
 
-            // Implement cases for Chapter3 and Chapter4 if needed
             default:
                 Debug.LogWarning("[HandleAsteroidDecision] Decision made in an unsupported chapter.");
                 break;
@@ -288,40 +243,19 @@ public class ChapterManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads the next level with a crossfade animation.
+    /// Loads the next level/scene without a fade animation.
     /// </summary>
-    public void LoadNextLevel()
+    /// <param name="sceneName">Name of the scene to load.</param>
+    public void LoadNextLevel(string sceneName)
     {
-        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        StartCoroutine(LevelAnimation(nextSceneIndex));
-    }
-
-    /// <summary>
-    /// Coroutine to handle crossfade animation before loading the next scene.
-    /// </summary>
-    /// <param name="index">Build index of the next scene.</param>
-    private IEnumerator LevelAnimation(int index)
-    {
-        if (crossFade != null)
+        if (Application.CanStreamedLevelBeLoaded(sceneName))
         {
-            crossFade.SetTrigger("start");
-            Debug.Log("[LevelAnimation] Crossfade animation triggered.");
+            Debug.Log($"[LoadNextLevel] Loading scene '{sceneName}' directly.");
+            SceneManager.LoadScene(sceneName);
         }
         else
         {
-            Debug.LogWarning("[LevelAnimation] CrossFade Animator is not assigned.");
-        }
-
-        yield return new WaitForSeconds(2.0f); // Wait for the crossfade animation to complete
-
-        if (index < SceneManager.sceneCountInBuildSettings)
-        {
-            Debug.Log($"[LevelAnimation] Loading next scene at index {index}.");
-            SceneManager.LoadScene(index);
-        }
-        else
-        {
-            Debug.LogError("[LevelAnimation] Next scene index is out of range.");
+            Debug.LogError($"[LoadNextLevel] Scene '{sceneName}' is not in the build settings.");
         }
     }
 }
