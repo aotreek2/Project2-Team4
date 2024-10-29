@@ -146,47 +146,35 @@ public class DecisionPanelManager : MonoBehaviour
         shipController = controller;
 
         // Set the description and options texts
-        if (decisionDescriptionText != null)
-            decisionDescriptionText.text = eventDescription;
-        else
-            Debug.LogError("[DecisionPanelManager] decisionDescriptionText is not assigned.");
-
-        if (option1Text != null)
-            option1Text.text = option1;
-        else
-            Debug.LogError("[DecisionPanelManager] option1Text is not assigned.");
-
-        if (option2Text != null)
-            option2Text.text = option2;
-        else
-            Debug.LogError("[DecisionPanelManager] option2Text is not assigned.");
+        decisionDescriptionText.text = eventDescription;
+        option1Text.text = option1;
+        option2Text.text = option2;
 
         // Play open sound
-        if (decisionAudioSource != null && decisionOpenSound != null)
-        {
-            decisionAudioSource.PlayOneShot(decisionOpenSound);
-        }
+        decisionAudioSource?.PlayOneShot(decisionOpenSound);
 
         // Show dark overlay
-        if (darkOverlay != null)
-        {
-            darkOverlay.gameObject.SetActive(true);
-        }
+        darkOverlay?.gameObject.SetActive(true);
+
+        // Ensure CanvasGroup settings for interactivity
+        decisionPanelCanvasGroup.alpha = 1f;
+        decisionPanelCanvasGroup.interactable = true;
+        decisionPanelCanvasGroup.blocksRaycasts = true;
+
+        // Ensure buttons are interactable
+        option1Button.interactable = true;
+        option2Button.interactable = true;
 
         // Start fade-in animation and pause the game
         StartCoroutine(FadeInAndPauseGame(0f, 1f, 0.5f)); // 0.5s fade duration
-
-        // Make the panel interactable
-        if (decisionPanelCanvasGroup != null)
-        {
-            decisionPanelCanvasGroup.interactable = true;
-            decisionPanelCanvasGroup.blocksRaycasts = true;
-        }
     }
 
     /// <summary>
     /// Fades in the decision panel and pauses the game.
     /// </summary>
+/// <summary>
+/// Fades in the decision panel and pauses the game.
+/// </summary>
     private IEnumerator FadeInAndPauseGame(float startAlpha, float endAlpha, float duration)
     {
         float elapsed = 0f;
@@ -197,9 +185,23 @@ public class DecisionPanelManager : MonoBehaviour
             decisionPanelCanvasGroup.alpha = alpha;
             yield return null;
         }
+
         decisionPanelCanvasGroup.alpha = endAlpha;
+
+        // Ensure CanvasGroup settings for interactivity after the fade
+        decisionPanelCanvasGroup.interactable = true;
+        decisionPanelCanvasGroup.blocksRaycasts = true;
+
+        // Ensure buttons are interactable
+        option1Button.interactable = true;
+        option2Button.interactable = true;
+
+        // Wait an additional second before pausing the game to allow UI to fully settle
+        yield return new WaitForSecondsRealtime(1f);
+
         Time.timeScale = 0f; // Pauses the game
     }
+
 
     /// <summary>
     /// Handles the selection of Option 1.
