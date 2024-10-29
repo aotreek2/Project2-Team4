@@ -21,76 +21,55 @@ public class CrewMember : MonoBehaviour
     private Animator crewAnim;
     public Image crewSelectedDot;
     private NavMeshAgent navAgent;
-    public bool isPerformingTask = false; // Made public for GeneratorController access
+    private bool isPerformingTask = false;
+    private CubeInteraction currentCubeInteraction; // Reference to the system being repaired
     private Transform currentRepairPoint; // Current target repair point
 
     public Renderer crewRenderer;
     public AudioSource walkingSFX, selectedSFX, assignedSFX, deathSFX;
 
     public Transform fpsCameraPos;
-    // Variables for wandering behavior
     public float wanderRadius = 10f; // Radius within which the crewmember can wander
     public float minWaitTime = 0f;   // Minimum time to wait before moving again
     public float maxWaitTime = 2f;   // Maximum time to wait before moving again
     private float waitTimeCounter = 0f;
 
-    // Variables for speed adjustment
     public float normalSpeed = 3.5f;
     public float panicSpeed = 6f;
     public float normalAcceleration = 8f;
     public float panicAcceleration = 12f;
 
-    // Reference to ShipController for any ship-wide mechanics
     private ShipController shipController;
-
-    // Rigidbody reference for physics interactions
     private Rigidbody rb;
-
-    // Threshold distance to start repair
-    public float repairStartThreshold = 1.0f; // Increased from 0.5f for better reliability
+    public float repairStartThreshold = 1.0f;
 
     void Start()
     {
-        // Initialize NavMeshAgent
         navAgent = GetComponent<NavMeshAgent>();
-        if (navAgent == null)
-        {
-            Debug.LogError($"[Start] NavMeshAgent component missing from crew member: {crewName}");
-        }
-        else
+        if (navAgent != null)
         {
             navAgent.speed = normalSpeed;
             navAgent.acceleration = normalAcceleration;
-            navAgent.stoppingDistance = repairStartThreshold; // Set the stopping distance
-            Debug.Log($"[Start] NavMeshAgent initialized for {crewName} with speed {navAgent.speed} and stopping distance {navAgent.stoppingDistance}");
+            navAgent.stoppingDistance = repairStartThreshold;
         }
 
-        // Initialize Rigidbody
         rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
             rb = gameObject.AddComponent<Rigidbody>();
             rb.isKinematic = true;
             rb.useGravity = false;
-            Debug.LogWarning($"[Start] Rigidbody was missing and has been added as kinematic for {crewName}");
         }
         else
         {
             rb.isKinematic = true;
             rb.useGravity = false;
-            Debug.Log($"[Start] Rigidbody found for {crewName} set to kinematic and gravity disabled");
         }
 
         crewAnim = GetComponent<Animator>();
-        if (crewAnim == null)
+        if (crewAnim != null)
         {
-            Debug.LogError($"[Start] Animator component missing from crew member: {crewName}");
-        }
-        else
-        {
-            // Ensure Root Motion is disabled to prevent conflicts with NavMeshAgent
             crewAnim.applyRootMotion = false;
-            Debug.Log($"[Start] Animator initialized for {crewName} with Root Motion disabled");
         }
 
         if (crewSelectedDot != null)
@@ -98,59 +77,24 @@ public class CrewMember : MonoBehaviour
             crewSelectedDot.gameObject.SetActive(false);
         }
 
-        // Find ShipController in the scene
         shipController = FindObjectOfType<ShipController>();
-        if (shipController == null)
-        {
-            Debug.LogError("[Start] ShipController not found in the scene.");
-        }
-
-        // Initialize AudioSources
-        if (walkingSFX == null || selectedSFX == null || assignedSFX == null || deathSFX == null)
-        {
-            Debug.LogWarning($"[Start] One or more AudioSources are not assigned on {crewName}");
-        }
-
-        // Initialize Renderer
-        if (crewRenderer == null)
-        {
-            crewRenderer = GetComponent<Renderer>();
-            if (crewRenderer == null)
-            {
-                Debug.LogError($"[Start] Renderer component missing from crew member: {crewName}");
-            }
-            else
-            {
-                Debug.Log($"[Start] Renderer initialized for {crewName}");
-            }
-        }
     }
 
     void Update()
     {
-        if (isDead) return; // Skip update logic if dead
+        if (isDead) return;
 
-        // Check for ship's critical condition and adjust behavior
         if (shipController != null && shipController.IsCriticalCondition())
         {
-            if (navAgent.speed != panicSpeed || navAgent.acceleration != panicAcceleration)
-            {
-                navAgent.speed = panicSpeed;
-                navAgent.acceleration = panicAcceleration;
-                Debug.Log($"[Update] {crewName} speed and acceleration set to panic values due to critical condition");
-            }
+            navAgent.speed = panicSpeed;
+            navAgent.acceleration = panicAcceleration;
         }
         else
         {
-            if (navAgent.speed != normalSpeed || navAgent.acceleration != normalAcceleration)
-            {
-                navAgent.speed = normalSpeed;
-                navAgent.acceleration = normalAcceleration;
-                Debug.Log($"[Update] {crewName} speed and acceleration set to normal values");
-            }
+            navAgent.speed = normalSpeed;
+            navAgent.acceleration = normalAcceleration;
         }
 
-        // Fatigue logic
         if (isPerformingTask)
         {
             fatigue += Time.deltaTime * 5f;
@@ -162,7 +106,6 @@ public class CrewMember : MonoBehaviour
             fatigue = Mathf.Clamp(fatigue, 0, 100);
         }
 
-        // Movement logic
         if (currentTask != Task.Idle && !isPerformingTask)
         {
             MoveTowardsRepairPoint();
@@ -172,45 +115,35 @@ public class CrewMember : MonoBehaviour
             Wander();
         }
 
-        // Check if the crew member has reached the repair point to start repair
         if (currentTask != Task.Idle && currentRepairPoint != null && !isPerformingTask)
         {
-            // Added additional check for path status
             if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance && navAgent.pathStatus == NavMeshPathStatus.PathComplete)
             {
-                Debug.Log($"[Update] {crewName} has reached the repair point and is starting repair");
                 StartRepair();
             }
         }
 
-        // Update Animator Parameters
         if (crewAnim != null)
         {
             crewAnim.SetBool("isDead", isDead);
             crewAnim.SetBool("isFixing", isPerformingTask);
 
-            // Set Speed for blending between Idle, Walking, and Running
             if (navAgent != null)
             {
                 float speed = navAgent.velocity.magnitude;
                 crewAnim.SetFloat("Speed", speed);
-                // Optionally, set 'isMoving' based on speed
-                // crewAnim.SetBool("isMoving", speed > 0.1f);
             }
             else
             {
                 crewAnim.SetFloat("Speed", 0f);
-                // crewAnim.SetBool("isMoving", false);
             }
         }
 
-        // Check for death
         if (health <= 0)
         {
             Die();
         }
 
-        // Press "K" to simulate death for testing purposes
         if (Input.GetKeyDown(KeyCode.K))
         {
             Die();
@@ -228,48 +161,32 @@ public class CrewMember : MonoBehaviour
         }
     }
 
-    // Assign the crew member to the generator
-    public void AssignToGenerator(GeneratorController generator)
+    public void AssignToRepairPoint(CubeInteraction cubeInteraction)
     {
-        if (currentTask != Task.Idle)
+        if (currentCubeInteraction != null) return;
+
+        if (navAgent != null && navAgent.hasPath)
         {
-            Debug.LogWarning($"[AssignToGenerator] {crewName} is already assigned to a task.");
-            return;
+            navAgent.ResetPath();
         }
 
-        currentTask = Task.RepairGenerator;
-        currentRepairPoint = generator.transform; // Assuming generator has a transform to move towards
+        currentCubeInteraction = cubeInteraction;
+        currentRepairPoint = cubeInteraction.repairPoint;
+        currentTask = DetermineTaskType(cubeInteraction.systemType);
 
         if (navAgent != null && currentRepairPoint != null)
         {
-            bool destinationSet = navAgent.SetDestination(currentRepairPoint.position);
-            if (destinationSet)
+            navAgent.SetDestination(currentRepairPoint.position);
+            navAgent.stoppingDistance = repairStartThreshold;
+            navAgent.isStopped = false;
+            if (walkingSFX != null && !walkingSFX.isPlaying)
             {
-                navAgent.stoppingDistance = repairStartThreshold;
-                navAgent.isStopped = false;
-                Debug.Log($"[AssignToGenerator] {crewName} is moving towards the Generator.");
-
-                if (walkingSFX != null && !walkingSFX.isPlaying)
-                {
-                    walkingSFX.Play();
-                    Debug.Log($"[AssignToGenerator] Walking sound played for {crewName}");
-                }
-
-                // Change the crew member's color to indicate assignment
-                if (crewRenderer != null)
-                {
-                    crewRenderer.material.color = Color.yellow;
-                    Debug.Log($"[AssignToGenerator] {crewName}'s color changed to yellow");
-                }
-
-                // Optionally, inform the generator
-                generator.AssignCrew(this);
+                walkingSFX.Play();
             }
-            else
+
+            if (crewRenderer != null)
             {
-                Debug.LogError($"[AssignToGenerator] {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the Generator is on the NavMesh.");
-                currentTask = Task.Idle;
-                currentRepairPoint = null;
+                crewRenderer.material.color = Color.yellow;
             }
         }
     }
@@ -293,25 +210,14 @@ public class CrewMember : MonoBehaviour
 
     private void StartRepair()
     {
-        if (isPerformingTask || currentRepairPoint == null)
+        if (isPerformingTask || currentCubeInteraction == null)
             return;
 
         isPerformingTask = true;
         crewAnim?.SetBool("isFixing", true);
         navAgent.isStopped = true;
-        Debug.Log($"[StartRepair] {crewName} started repairing {currentTask}");
 
-        // Start the repair process via GeneratorController
-        GeneratorController generator = currentRepairPoint.GetComponent<GeneratorController>();
-        if (generator != null)
-        {
-            generator.StartRepair(this, efficiency);
-        }
-        else
-        {
-            Debug.LogError($"[StartRepair] Could not find GeneratorController on {currentRepairPoint.name}");
-            CompleteTask(); // Reset task if generator not found
-        }
+        currentCubeInteraction.StartRepair(this, efficiency);
     }
 
     public void CompleteTask()
@@ -319,40 +225,29 @@ public class CrewMember : MonoBehaviour
         isPerformingTask = false;
         currentTask = Task.Idle;
         navAgent.isStopped = false;
+        currentCubeInteraction = null;
         currentRepairPoint = null;
 
-        // Reset the crew member's color after completing the task
         if (crewRenderer != null)
         {
             crewRenderer.material.color = Color.white;
-            Debug.Log($"[CompleteTask] {crewName}'s color reset to white");
         }
 
-        // Update Animator Parameters
         if (crewAnim != null)
         {
             crewAnim.SetBool("isFixing", false);
-            // crewAnim.SetBool("isMoving", false); // Optional, based on movement
-            // crewAnim.SetFloat("Speed", 0f); // Optionally reset speed
         }
-
-        Debug.Log($"[CompleteTask] {crewName} has completed the task and is now idle");
     }
 
     void Wander()
     {
-        if (navAgent == null)
-        {
-            Debug.LogWarning($"[Wander] NavMeshAgent is null for {crewName}");
-            return;
-        }
+        if (navAgent == null) return;
 
         if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
         {
             if (waitTimeCounter <= 0f)
             {
                 waitTimeCounter = Random.Range(minWaitTime, maxWaitTime);
-                Debug.Log($"[Wander] {crewName} is waiting for {waitTimeCounter} seconds");
             }
             else
             {
@@ -360,31 +255,15 @@ public class CrewMember : MonoBehaviour
                 if (waitTimeCounter <= 0f)
                 {
                     Vector3 newPos = RandomNavSphere(transform.position, wanderRadius, NavMesh.AllAreas);
-                    bool destinationSet = navAgent.SetDestination(newPos);
-                    if (destinationSet)
+                    navAgent.SetDestination(newPos);
+                    if (walkingSFX != null && !walkingSFX.isPlaying)
                     {
-                        // Set 'Speed' to walking speed
-                        crewAnim?.SetFloat("Speed", navAgent.velocity.magnitude);
-                        Debug.Log($"[Wander] {crewName} is wandering to {newPos}");
-
-                        if (walkingSFX != null && !walkingSFX.isPlaying)
-                        {
-                            walkingSFX.Play();
-                            Debug.Log($"[Wander] Walking sound played for {crewName}");
-                        }
-
-                        // Change the crew member's color to indicate wandering
-                        if (crewRenderer != null)
-                        {
-                            crewRenderer.material.color = Color.white;
-                            Debug.Log($"[Wander] {crewName}'s color set to white for wandering");
-                        }
+                        walkingSFX.Play();
                     }
-                    else
+
+                    if (crewRenderer != null)
                     {
-                        Debug.LogWarning($"[Wander] {crewName} failed to set wander destination to {newPos}. Ensure the position is on the NavMesh.");
-                        // Optionally, reset the wait counter to attempt wandering again
-                        waitTimeCounter = Random.Range(minWaitTime, maxWaitTime);
+                        crewRenderer.material.color = Color.white;
                     }
                 }
             }
@@ -403,7 +282,6 @@ public class CrewMember : MonoBehaviour
     {
         morale += amount;
         morale = Mathf.Clamp(morale, 0f, 100f);
-        Debug.Log($"[AdjustMorale] {crewName} morale adjusted by {amount}. Current morale: {morale}");
     }
 
     public void EnableAI()
@@ -411,15 +289,13 @@ public class CrewMember : MonoBehaviour
         if (navAgent != null)
         {
             navAgent.enabled = true;
-            Debug.Log($"[EnableAI] NavMeshAgent enabled for {crewName}");
         }
         this.enabled = true;
 
         if (rb != null)
         {
-            rb.isKinematic = true; // Ensure Rigidbody remains kinematic
+            rb.isKinematic = true;
             rb.useGravity = false;
-            Debug.Log($"[EnableAI] Rigidbody set to kinematic and gravity disabled for {crewName}");
         }
     }
 
@@ -428,15 +304,13 @@ public class CrewMember : MonoBehaviour
         if (navAgent != null)
         {
             navAgent.enabled = false;
-            Debug.Log($"[DisableAI] NavMeshAgent disabled for {crewName}");
         }
         this.enabled = false;
 
         if (rb != null)
         {
-            rb.isKinematic = false; // Allow physics if AI is disabled
+            rb.isKinematic = false;
             rb.useGravity = true;
-            Debug.Log($"[DisableAI] Rigidbody set to non-kinematic and gravity enabled for {crewName}");
         }
     }
 
@@ -444,26 +318,21 @@ public class CrewMember : MonoBehaviour
     {
         currentTask = Task.Idle;
         fatigue = Mathf.Clamp(fatigue - (Time.deltaTime * 10f), 0, 100);
-        Debug.Log($"[Rest] {crewName} is resting. Fatigue level: {fatigue}");
     }
 
     public void Select()
     {
-        // Highlight the crew member when selected
         if (crewSelectedDot != null)
         {
             crewSelectedDot.gameObject.SetActive(true);
-            Debug.Log($"[Select] {crewName} has been selected");
         }
     }
 
     public void Deselect()
     {
-        // Reset the crew member's appearance when deselected
         if (crewSelectedDot != null)
         {
             crewSelectedDot.gameObject.SetActive(false);
-            Debug.Log($"[Deselect] {crewName} has been deselected");
         }
     }
 
@@ -472,97 +341,50 @@ public class CrewMember : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
-        currentTask = Task.Dead;  // Set task to Dead state
+        currentTask = Task.Dead;
         if (navAgent != null)
         {
-            navAgent.isStopped = true;  // Stop all movement
-            navAgent.enabled = false;   // Disable the NavMeshAgent to prevent sliding
-            Debug.Log($"[Die] NavMeshAgent disabled for {crewName}");
+            navAgent.isStopped = true;
+            navAgent.enabled = false;
         }
 
-        // Play death sound if available
         if (deathSFX != null)
         {
             deathSFX.Play();
-            Debug.Log($"[Die] Death sound played for {crewName}");
         }
 
-        // Play a death animation if available
         if (crewAnim != null)
         {
             crewAnim.SetBool("isDead", true);
-            Debug.Log($"[Die] Death animation triggered for {crewName}");
         }
         Deselect();
 
-        // Notify ShipController about the death
         if (shipController != null)
         {
-            shipController.SacrificeCrew(1); // Adjust the number as needed
+            shipController.SacrificeCrew(1);
         }
 
-        // Optionally, destroy the crew member after a delay
-        Destroy(gameObject, 5f); // Adjust the delay as needed
-        Debug.Log($"[Die] {crewName} will be destroyed in 5 seconds");
+        Destroy(gameObject, 5f);
     }
 
     private void MoveTowardsRepairPoint()
     {
-        if (navAgent == null || currentRepairPoint == null)
-        {
-            Debug.LogWarning($"[MoveTowardsRepairPoint] {crewName} cannot move towards repair point because NavMeshAgent or repair point is null.");
-            return;
-        }
+        if (navAgent == null || currentRepairPoint == null) return;
 
-        // Ensure the agent is active
         if (navAgent.isStopped)
         {
             navAgent.isStopped = false;
-            Debug.Log($"[MoveTowardsRepairPoint] NavMeshAgent resumed for {crewName}");
         }
 
-        // Set destination if not already set or if the path is invalid
         if (!navAgent.hasPath || navAgent.remainingDistance <= navAgent.stoppingDistance)
         {
-            bool destinationSet = navAgent.SetDestination(currentRepairPoint.position);
-            if (destinationSet)
+            navAgent.SetDestination(currentRepairPoint.position);
+            crewAnim?.SetFloat("Speed", navAgent.velocity.magnitude);
+
+            if (walkingSFX != null && !walkingSFX.isPlaying)
             {
-                crewAnim?.SetFloat("Speed", navAgent.velocity.magnitude);
-                Debug.Log($"[MoveTowardsRepairPoint] {crewName} is moving towards {currentRepairPoint.position}");
-
-                // Play walking sound if not already playing
-                if (walkingSFX != null && !walkingSFX.isPlaying)
-                {
-                    walkingSFX.Play();
-                    Debug.Log($"[MoveTowardsRepairPoint] Walking sound played for {crewName}");
-                }
-
-                // Change the crew member's color to indicate assignment
-                if (crewRenderer != null)
-                {
-                    crewRenderer.material.color = Color.yellow;
-                    Debug.Log($"[MoveTowardsRepairPoint] {crewName}'s color changed to yellow");
-                }
-
-                // Optional: Add a debug log to confirm assignment
-                Debug.Log($"[MoveTowardsRepairPoint] Crew member {crewName} assigned to task: {currentTask}");
-            }
-            else
-            {
-                Debug.LogWarning($"[MoveTowardsRepairPoint] {crewName} failed to set destination to {currentRepairPoint.position}. Ensure the repair point is on the NavMesh.");
+                walkingSFX.Play();
             }
         }
     }
-
-        public void AssignToRepairPoint(CubeInteraction cubeInteraction)
-        {
-            // Implement logic for moving the crew member to the repair point
-            // For example, set position to the repair point of CubeInteraction
-            if (cubeInteraction.repairPoint != null)
-            {
-                transform.position = cubeInteraction.repairPoint.position;
-                Debug.Log($"CrewMember: Assigned to repair point of {cubeInteraction.systemType}.");
-            }
-        }
-
 }
